@@ -73,7 +73,7 @@ def main():
                         action = 'store_true',
                         help = 'When set, will split WGS data into small blocks',
     )
-    parser.add_argument('-block', '--Parallel_Block_Size',
+    parser.add_argument('-bs', '--Parallel_Block_Size',
                         type = long,
                         default = 50000000,
                         help = 'Parallel Block Size',
@@ -153,9 +153,15 @@ def main():
     ##Pipeline
     
     if not args.Whole_genome_squencing_data:
-        ##
+        muse_call.index_wxs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, engine, logger)
+        muse_call_output = muse_call.call_wxs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
+        muse_vcf = muse_sump.sump_wxs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
     else:
-        ##
+        muse_call.index_wgs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, engine, logger)
+        muse_call_output = muse_call.call_wgs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
+        muse_vcf = muse_sump.sump_wgs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
+    if eliminate_intermediate_files:
+        pipe_util.remove_file_list(uuid, [muse_call_output], engine, logger)
 """
     if md5:
         for bam in Analysis_ready_bam_list_path:
