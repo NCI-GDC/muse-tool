@@ -10,7 +10,7 @@ import df_util
 import time_util
 #import bam_util
 #import bam_validate
-#import verify_util
+import verify_util
 #import RealignerTargetCreator
 #import IndelRealigner
 #import BaseRecalibrator
@@ -162,23 +162,9 @@ def main():
         muse_vcf = muse_sump.sump_wgs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
     if eliminate_intermediate_files:
         pipe_util.remove_file_list(uuid, [muse_call_output], engine, logger)
-"""
     if md5:
-        for bam in Analysis_ready_bam_list_path:
-            bam_name = os.path.basename(bam)
-            bam_dir = os.path.dirname(bam)
-            bam_basename, bam_ext = os.path.splitext(bam_name)
-            bai_name = bam_basename + '.bai'
-            bai_path = os.path.join(bam_dir, bai_name)
-            verify_util.store_md5_size(uuid, bam, engine, logger)
-            verify_util.store_md5_size(uuid, bai_path, engine, logger)
-    
-    if eliminate_intermediate_files:
-            pipe_util.remove_file_list(uuid, harmonized_IR_bam_list_path, engine, logger)
-    
-    for bam in Analysis_ready_bam_list_path:
-        validate_file = bam_validate.bam_validate(uuid, bam, engine, logger)
-"""
+        verify_util.store_md5_size(uuid, muse_vcf, engine, logger)
+
 
 if __name__ == '__main__':
     main()
