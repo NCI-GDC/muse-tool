@@ -14,6 +14,8 @@ def update_env(logger):
     path = env['PATH']
     logger.info('path=%s' % path)
     home_dir = os.path.expanduser('~')
+    new_path = path
+    new_path += ':' + os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
     pipe_dir=os.path.dirname(os.path.realpath(sys.argv[0]))
     new_path = path
     new_path+=':'+pipe_dir
