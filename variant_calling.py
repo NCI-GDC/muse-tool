@@ -8,13 +8,13 @@ import sqlalchemy
 import pipe_util
 import df_util
 import time_util
-import bam_util
-import bam_validate
-import verify_util
-import RealignerTargetCreator
-import IndelRealigner
-import BaseRecalibrator
-import PrintReads
+#import bam_util
+#import bam_validate
+#import verify_util
+#import RealignerTargetCreator
+#import IndelRealigner
+#import BaseRecalibrator
+#import PrintReads
 
 def is_dir(d):
     '''
@@ -35,7 +35,7 @@ def is_nat(x):
 
 
 def main():
-    parser = argparse.ArgumentParser('Broad cocleaning (Inderrealignment and BQSR) pipeline')
+    parser = argparse.ArgumentParser('MuSE variant calling pipeline')
 
     # Logging flags.
     parser.add_argument('-d', '--debug',
@@ -52,22 +52,31 @@ def main():
                         required = True,
                         help = 'Reference fasta path.',
     )
-    parser.add_argument('-indel','--known_1k_genome_indel_sites',
-                        required=True,
-                        help='Reference INDEL path.',
-    )
     parser.add_argument('-snp','--dbsnp_known_snp_sites',
                         required=True,
                         help='Reference SNP path.',
     )
-    parser.add_argument('-b', '--harmonized_bam_path',
-                        required = False,
-                        action="append",
-                        help = 'Source bam path.',
+    parser.add_argument('-tb', '--analysis_ready_tumor_bam_path',
+                        required = True,
+                        nargs = '?',
+                        default = [sys.stdin],
+                        help = 'Source patient tumor bam path.',
     )
-    parser.add_argument('-list', '--harmonized_bam_list_path',
+    parser.add_argument('-nb', '--analysis_ready_normal_bam_path',
+                        required = True,
+                        nargs = '?',
+                        default = [sys.stdin],
+                        help = 'Source patient normal bam path.',
+    )
+    parser.add_argument('-g', '--Whole_genome_squencing_data',
                         required = False,
-                        help = 'Source bam list path.',
+                        action = 'store_true',
+                        help = 'When set, will split WGS data into small blocks',
+    )
+    parser.add_argument('-block', '--Parallel_Block_Size',
+                        type = long,
+                        default = 50000000,
+                        help = 'Parallel Block Size',
     )
     parser.add_argument('-s', '--scratch_dir',
                         required = False,
@@ -101,25 +110,17 @@ def main():
 
     args = parser.parse_args()
     reference_fasta_name = args.reference_fasta_name
-    known_1k_genome_indel_sites = args.known_1k_genome_indel_sites
     dbsnp_known_snp_sites = args.dbsnp_known_snp_sites
     uuid = args.uuid
-    harmonized_bam_path = args.harmonized_bam_path
-    if not args.harmonized_bam_list_path:
-        list_dir = os.path.dirname(harmonized_bam_path[0])
-        harmonized_bam_list_path = os.path.join(list_dir, uuid + '_harmonized_bam_list.list')
-        with open(harmonized_bam_list_path, "w") as handle:
-            for bam in harmonized_bam_path:
-                handle.write(bam + "\n")
-    else:
-        harmonized_bam_list_path = args.harmonized_bam_list_path
-
+    analysis_ready_tumor_bam_path = args.analysis_ready_tumor_bam_path
+    analysis_ready_normal_bam_path = args.analysis_ready_normal_bam_path
+    blocksize = args.Parallel_Block_Size
     if not args.scratch_dir:
-        scratch_dir = os.path.dirname(harmonized_bam_list_path)
+        scratch_dir = os.path.dirname(analysis_ready_tumor_bam_path)
     else:
         scratch_dir = args.scratch_dir
     if not args.log_dir:
-        log_dir = os.path.dirname(harmonized_bam_list_path)
+        log_dir = os.path.dirname(analysis_ready_tumor_bam_path)
     else:
         log_dir = args.log_dir
     thread_count = str(args.thread_count)
@@ -134,7 +135,7 @@ def main():
 
     ##logging
     logging.basicConfig(
-        filename=os.path.join(log_dir, 'Broad_cocleaning_' + uuid + '.log'),  # /host for docker
+        filename=os.path.join(log_dir, 'MuSE_variant_calling' + uuid + '.log'),  # /host for docker
         level=args.level,
         filemode='a',
         format='%(asctime)s %(levelname)s %(message)s',
@@ -144,37 +145,18 @@ def main():
     logger = logging.getLogger(__name__)
     hostname = os.uname()[1]
     logger.info('hostname=%s' % hostname)
-    logger.info('harmonized_bam_list_path=%s' % harmonized_bam_list_path)
-    if not args.harmonized_bam_path:
-        with open(harmonized_bam_list_path) as f:
-            harmonized_bam_path = f.read().splitlines()
-            for path in harmonized_bam_path:
-                logger.info('harmonized_bam_path=%s' % path)
-    else:
-        for path in harmonized_bam_path:
-            logger.info('harmonized_bam_path=%s' % path)
-
-    engine_path = 'sqlite:///' + os.path.join(log_dir, uuid + '_Broad_cocleaning.db')
+    logger.info('analysis_ready_tumor_bam_path=%s' % analysis_ready_tumor_bam_path)
+    logger.info('analysis_ready_normal_bam_path=%s' % analysis_ready_normal_bam_path)
+    engine_path = 'sqlite:///' + os.path.join(log_dir, uuid + '_MuSE_variant_calling.db')
     engine = sqlalchemy.create_engine(engine_path, isolation_level='SERIALIZABLE')
     
     ##Pipeline
-    #check .bai file, call samtools index if not exist
-    RealignerTargetCreator.index(uuid, harmonized_bam_list_path, engine, logger)
     
-    #call RealignerTargetCreator for harmonized bam list
-    harmonized_bam_intervals_path = RealignerTargetCreator.RTC(uuid, harmonized_bam_list_path, thread_count, reference_fasta_name, known_1k_genome_indel_sites, engine, logger)
-    
-    #call IndelRealigner together but save the reads in the output coresponding to the input that the read came from.
-    harmonized_IR_bam_list_path = IndelRealigner.IR(uuid, harmonized_bam_list_path, reference_fasta_name, known_1k_genome_indel_sites, harmonized_bam_intervals_path, engine, logger)
-    
-    #call BQSR table individually and apply it on bam
-    Analysis_ready_bam_list_path = []
-    for bam in harmonized_IR_bam_list_path:
-        harmonized_IR_bam_BQSR_table_path = BaseRecalibrator.BQSR(uuid, bam, thread_count, reference_fasta_name, dbsnp_known_snp_sites, engine, logger)
-        Analysis_ready_bam_path = PrintReads.PR(uuid, bam, thread_count, reference_fasta_name, harmonized_IR_bam_BQSR_table_path, engine, logger)
-        bam_validate.bam_validate(uuid, Analysis_ready_bam_path, engine, logger)
-        Analysis_ready_bam_list_path.append(Analysis_ready_bam_path)
-    
+    if not args.Whole_genome_squencing_data:
+        ##
+    else:
+        ##
+"""
     if md5:
         for bam in Analysis_ready_bam_list_path:
             bam_name = os.path.basename(bam)
@@ -190,6 +172,7 @@ def main():
     
     for bam in Analysis_ready_bam_list_path:
         validate_file = bam_validate.bam_validate(uuid, bam, engine, logger)
+"""
 
 if __name__ == '__main__':
     main()
