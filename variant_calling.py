@@ -8,7 +8,7 @@ import sqlalchemy
 import pipe_util
 import df_util
 import time_util
-#import bam_util
+import bam_util
 #import bam_validate
 import verify_util
 import muse_call
