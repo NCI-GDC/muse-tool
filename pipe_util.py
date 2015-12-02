@@ -103,7 +103,7 @@ def do_piped_commands(cmdlist, logger):
             i += 1
         except Exception as e:
             logger.debug('failed cmd: %s' % str(timecmd))
-            logger.debug(e.output)
+            #logger.debug(e.output)
             logger.debug('exception: %s' % e)
             sys.exit('failed cmd: %s' % str(timecmd))
     for popencmd in popen_list[:-1]:
