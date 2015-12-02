@@ -11,10 +11,8 @@ import time_util
 #import bam_util
 #import bam_validate
 import verify_util
-#import RealignerTargetCreator
-#import IndelRealigner
-#import BaseRecalibrator
-#import PrintReads
+import muse_call
+import muse_sump
 
 def is_dir(d):
     '''
