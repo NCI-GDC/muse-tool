@@ -168,7 +168,7 @@ def main():
             
     #MuSE call
     muse_call_output = muse_call.call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
-    
+"""  
     if not args.Whole_genome_squencing_data:
         muse_vcf = muse_sump.sump_wxs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
     else:
@@ -177,7 +177,7 @@ def main():
         pipe_util.remove_file_list(uuid, [muse_call_output], engine, logger)
     if md5:
         verify_util.store_md5_size(uuid, muse_vcf, engine, logger)
-
+"""
 
 if __name__ == '__main__':
     main()
