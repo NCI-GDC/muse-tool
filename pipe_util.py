@@ -230,3 +230,8 @@ def remove_dir(adir, engine, logger):
     logger.info('removing directory: %s' % adir)
     shutil.rmtree(adir)
     logger.info('removed directory: %s' % adir)
+
+def multi_cmds(cmds, thread_count, logger):
+    p = Pool(thread_count)
+    values = p.map(do_piped_commands, cmds, 1)
+    return values
