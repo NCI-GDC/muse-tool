@@ -52,7 +52,7 @@ def main():
     )
     parser.add_argument('-snp','--dbsnp_known_snp_sites',
                         required=True,
-                        help='Reference SNP path.',
+                        help='Reference SNP path, that should be bgzip compressed, tabix indexed',
     )
     parser.add_argument('-tb', '--analysis_ready_tumor_bam_path',
                         required = True,
@@ -149,14 +149,27 @@ def main():
     engine = sqlalchemy.create_engine(engine_path, isolation_level='SERIALIZABLE')
     
     ##Pipeline
-    bam_util.samtools_faidx(uuid, reference_fasta_name, engine, logger)
+    #faidx reference fasta file if needed.
+    fai_path = reference_fasta_name + '.fai'
+    if os.path.isfile(fai_path):
+      logger.info('reference_fai_path=%s' % fai_path)
+    else:
+      fai_path = bam_util.samtools_faidx(uuid, reference_fasta_name, engine, logger)
     
+    #index input bam files if needed.
+    bam_path = []
+    bam_path.extend([analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path])
+    for path in bam_path:
+        bai_path = path + '.bai'
+        if os.path.isfile(bai_path):
+            logger.info('analysis_ready_bam_bai_path=%s' % bai_path)
+        else:
+            bai_path = bam_util.samtools_bam_index(uuid, path, engine, logger)
+
     if not args.Whole_genome_squencing_data:
-        muse_call.index_wxs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, engine, logger)
         muse_call_output = muse_call.call_wxs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
         muse_vcf = muse_sump.sump_wxs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
     else:
-        muse_call.index_wgs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, engine, logger)
         muse_call_output = muse_call.call_wgs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
         muse_vcf = muse_sump.sump_wgs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
     if eliminate_intermediate_files:
