@@ -96,30 +96,16 @@ def do_piped_commands(cmdlist, logger):
     i = 0
     logger.info('running piped cmds: %s' % cmdlist)
     for timecmd in timecmdlist:
-        if first_flag:
-            first_flag = False
-            timecmd.insert(0, '/usr/bin/time')
-            timecmd.insert(1, '-v')
-            try:
-                logger.info('create piped command ' + str(i) + ':' + str(timecmd))
-                popen_list.append(subprocess.Popen(timecmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env))  # ,stderr=subprocess.STDOUT
-                i += 1
-            except Exception as e:
-                logger.debug('failed cmd: %s' % str(timecmd))
-                logger.debug(e.output)
-                logger.debug('exception: %s' % e)
-                sys.exit('failed cmd: %s' % str(timecmd))
-        else:
-            try:
-                logger.info('create piped command ' + str(i) + ':' + str(timecmd))
-                prev_pipe = popen_list[i - 1]
-                popen_list.append(subprocess.Popen(timecmd, stdin=prev_pipe.stdout, env=env))  # stderr=subprocess.STDOUT,
-                i += 1
-            except Exception as e:
-                logger.debug('failed cmd: %s' % str(timecmd))
-                logger.debug(e.output)
-                logger.debug('exception: %s' % e)
-                sys.exit('failed cmd: %s' % str(timecmd))
+        try:
+            logger.info('create piped command ' + str(i) + ':' + str(timecmd))
+            prev_pipe = popen_list[i - 1]
+            popen_list.append(subprocess.Popen(timecmd, stdin=prev_pipe.stdout, env=env))  # stderr=subprocess.STDOUT,
+            i += 1
+        except Exception as e:
+            logger.debug('failed cmd: %s' % str(timecmd))
+            logger.debug(e.output)
+            logger.debug('exception: %s' % e)
+            sys.exit('failed cmd: %s' % str(timecmd))
     for popencmd in popen_list[:-1]:
         popencmd.stdout.close()
     output = popen_list[-1].communicate()[0]
