@@ -233,5 +233,5 @@ def remove_dir(adir, engine, logger):
 
 def multi_cmds(cmds, thread_count, logger):
     p = Pool(int(thread_count))
-    values = p.map(do_piped_commands(cmds, thread_count), cmds, 1)
+    values = p.map(do_piped_commands(cmds, logger), cmds, 1)
     return values
