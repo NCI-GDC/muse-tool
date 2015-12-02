@@ -10,7 +10,7 @@ def fai_chunk(fai_path, blocksize):
   with open(fai_path) as handle:
     for line in handle:
       tmp = line.split("\t")
-      seq_map[tmp[0]] = long(tmp[1])
+      seq_map[tmp[0]] = int(tmp[1])
     for seq in seq_map:
         l = seq_map[seq]
         for i in xrange(1, l, blocksize):
