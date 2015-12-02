@@ -232,35 +232,7 @@ def remove_dir(adir, engine, logger):
     shutil.rmtree(adir)
     logger.info('removed directory: %s' % adir)
             
-def is_aln_bam(bam_path, logger):
-    bwa_type = os.path.basename(os.path.dirname(bam_path))
-    bam_dirs = bam_path.split('/')
-    for bam_dir in bam_dirs:
-        if bam_dir.startswith('bwa'):
-            if bam_dir.startswith('bwa_aln'):
-                return True
-            else:
-                return False
-    logger.debug('no `bwa` in path')
-    sys.exit(1)
-
-def extract_intervals(uuid, interval_list_dir, engine, logger):
-    step_dir = os.path.dirname(interval_list_dir)
-    logger.info('extract_intervals() step_dir=%s' % step_dir)
-    if already_step(step_dir, 'extract_intervals', logger):
-        logger.info('already extracted intervals dir')
-    else:
-        home_dir = os.path.expanduser('~')
-        intervals_source_dir = os.path.join(home_dir, 'pipelines', 'intervals')
-        logger.info('shutil.copytree from %s to %s' % (intervals_source_dir, interval_list_dir))
-        shutil.copytree(intervals_source_dir, interval_list_dir)
-        cmd = ['unxz', os.path.join(interval_list_dir, '*.xz')]
-        shell_cmd = ' '.join(cmd)
-        output = do_shell_command(shell_cmd, logger)
-        df = time_util.store_time(uuid, cmd, output, logger)
-        table_name = 'time_mem_unxz_intervals_dir'
-        unique_key_dict = {'uuid': uuid}
-        df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
-        create_already_step(step_dir, 'extract_intervals', logger)
-        logger.info('completed extracting intervals dir')
-    return
+def multi_cmds(cmds, thread_count):
+    p = Pool(thread_count)
+    outputs = p.map(do_shell_command, cmds, 1)
+    return outputs
