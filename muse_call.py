@@ -65,4 +65,4 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
           for line in handle:
             if first or not line.startswith('#'):
               ohandle.write(line)
-  
+  return muse_call_output_path
