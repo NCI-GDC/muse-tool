@@ -72,7 +72,7 @@ def main():
                         help = 'When set, will split WGS data into small blocks',
     )
     parser.add_argument('-bs', '--Parallel_Block_Size',
-                        type = long,
+                        type = is_nat,
                         default = 50000000,
                         help = 'Parallel Block Size',
     )
