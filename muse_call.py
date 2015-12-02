@@ -56,7 +56,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    normal_bam = analysis_ready_normal_bam_path,
                                    output_base = os.path.join(step_dir, 'output.file')
                                    )
-    outputs = pipu_util.multi_cmds(list(a[0] for a in cmds), thread_count, logger)
+    outputs = pipe_util.multi_cmds(list(a[0] for a in cmds), thread_count, logger)
     first = True
     merge_output = muse_call_output_path
     with open (merge_output, "w") as ohandle:
