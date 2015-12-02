@@ -70,7 +70,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    normal_bam = analysis_ready_normal_bam_path,
                                    output_base = os.path.join(work_dir, 'output.file')
                                    )
-    rvals = cmds_runner(list(a[0] for a in cmds), args.cpus)
+    rvals = cmds_runner(list(a[0] for a in cmds), thread_count)
     first = True
     merge_output = muse_call_output_path
     with open (merge_output, "w") as ohandle:
