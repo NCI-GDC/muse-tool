@@ -12,7 +12,7 @@ import bam_util
 #import bam_validate
 import verify_util
 import muse_call
-import muse_sump
+#import muse_sump
 
 def is_dir(d):
     '''
