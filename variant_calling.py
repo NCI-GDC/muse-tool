@@ -165,12 +165,13 @@ def main():
             logger.info('analysis_ready_bam_bai_path=%s' % bai_path)
         else:
             bai_path = bam_util.samtools_bam_index(uuid, path, engine, logger)
-
+            
+    #MuSE call
+    muse_call_output = muse_call.call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
+    
     if not args.Whole_genome_squencing_data:
-        muse_call_output = muse_call.call_wxs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
         muse_vcf = muse_sump.sump_wxs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
     else:
-        muse_call_output = muse_call.call_wgs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
         muse_vcf = muse_sump.sump_wgs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
     if eliminate_intermediate_files:
         pipe_util.remove_file_list(uuid, [muse_call_output], engine, logger)
