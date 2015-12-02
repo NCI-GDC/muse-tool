@@ -1,7 +1,6 @@
 import os
 import sys
 import string
-import tempfile
 import df_util
 import pipe_util
 import time_util
@@ -47,7 +46,6 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     logger.info('running step `MuSE call` of: %s' % analysis_ready_tumor_bam_path)
     home_dir = os.path.expanduser('~')
     muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
-    work_dir = os.path.abspath(tempfile.mkdtemp(call_dir, prefix="muse_work_"))
     cmds = list(muse_call_cmd_iter(
                                    muse = muse_path,
                                    ref = reference_fasta_name,
@@ -55,7 +53,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    blocksize = blocksize,
                                    tumor_bam = analysis_ready_tumor_bam_path,
                                    normal_bam = analysis_ready_normal_bam_path,
-                                   output_base = os.path.join(work_dir, 'output.file'))
+                                   output_base = os.path.join(step_dir, 'output.file'))
     )
     outputs = pipe_util.multi_cmds(list(a[0] for a in cmds), thread_count)
     first = True
