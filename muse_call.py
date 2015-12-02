@@ -45,5 +45,24 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     logger.info('already completed step `MuSE call` of: %s' % analysis_ready_tumor_bam_path)
   else:
     logger.info('running step `MuSE call` of: %s' % analysis_ready_tumor_bam_path)
-    
+    home_dir = os.path.expanduser('~')
+    muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
+    cmds = list(muse_call_cmd_iter(
+                                   muse = muse_path,
+                                   ref = reference_fasta_name,
+                                   fai_path = fai_path,
+                                   blocksize = blocksize,
+                                   tumor_bam = analysis_ready_tumor_bam_path,
+                                   normal_bam = analysis_ready_normal_bam_path,
+                                   output_base = os.path.join(step_dir, 'output.file')
+                                   )
+    outputs = pipu_util.multi_cmds(list(a[0] for a in cmds), thread_count, logger)
+    first = True
+    merge_output = muse_call_output_path
+    with open (merge_output, "w") as ohandle:
+      for cmd, out in cmds:
+        with open(out) as handle:
+          for line in handle:
+            if first or not line.startswith('#'):
+              ohandle.write(line)
   
