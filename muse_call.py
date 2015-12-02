@@ -16,19 +16,7 @@ def fai_chunk(fai_path, blocksize):
         l = seq_map[seq]
         for i in xrange(1, l, blocksize):
             yield (seq, i, min(i+blocksize-1, l))
-           
-def cmd_caller(cmd):
-    logging.info("RUNNING: %s" % (cmd))
-    print ('running %s' % cmd)
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = p.communicate()
-    return p.returncode
 
-def cmds_runner(cmds, cpus):
-    p = Pool(cpus)
-    values = p.map(cmd_caller, cmds, 1)
-    return values
- 
 def muse_call_cmd_iter(muse, ref, fai_path, blocksize, tumor_bam, normal_bam, output_base):
   template = string.Template("${MUSE} call -f ${REF} -r ${REGION} ${TUMOR_BAM} ${NORMAL_BAM} -O ${OUTPUT_BASE}.${BLOCK_NUM}")
   for i, block in enumerate(fai_chunk(fai_path, blocksize)):
@@ -36,13 +24,12 @@ def muse_call_cmd_iter(muse, ref, fai_path, blocksize, tumor_bam, normal_bam, ou
                               dict(
                                    REF = ref,
                                    REGION = '%s:%s-%s' % (block[0], block[1], block[2]),
-                                   BLOCK_NUM = i
-                                   ),
+                                   BLOCK_NUM = i),
                                    MUSE = muse,
                                    TUMOR_BAM = tumor_bam,
                                    NORMAL_BAM = normal_bam,
                                    OUTPUT_BASE = output_base
-                              )
+    )
     yield cmd, "%s.%s.MuSE.txt" % (output_base, i)
 
 def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
@@ -68,9 +55,9 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    blocksize = blocksize,
                                    tumor_bam = analysis_ready_tumor_bam_path,
                                    normal_bam = analysis_ready_normal_bam_path,
-                                   output_base = os.path.join(work_dir, 'output.file')
+                                   output_base = os.path.join(work_dir, 'output.file'))
     )
-    rvals = cmds_runner(list(a[0] for a in cmds), thread_count)
+    outputs = pipe_util.multi_cmds(list(a[0] for a in cmds), thread_count)
     first = True
     merge_output = muse_call_output_path
     with open (merge_output, "w") as ohandle:
