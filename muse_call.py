@@ -19,11 +19,9 @@ def fai_chunk(fai_path, blocksize):
            
 def cmd_caller(cmd):
     logging.info("RUNNING: %s" % (cmd))
-    print "running", cmd
+    print 'running %s' % cmd
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
-    if len(stderr):
-        print stderr
     return p.returncode
 
 def cmds_runner(cmds, cpus):
