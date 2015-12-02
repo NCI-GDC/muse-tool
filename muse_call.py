@@ -13,7 +13,7 @@ def fai_chunk(fai_path, blocksize):
       seq_map[tmp[0]] = int(tmp[1])
     for seq in seq_map:
         l = seq_map[seq]
-        for i in xrange(1, l, blocksize):
+        for i in range(1, l, blocksize):
             yield (seq, i, min(i+blocksize-1, l))
 
 def muse_call_cmd_iter(muse, ref, fai_path, blocksize, tumor_bam, normal_bam, output_base):
