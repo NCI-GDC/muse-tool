@@ -151,11 +151,11 @@ def main():
     ##Pipeline
     
     if not args.Whole_genome_squencing_data:
-        muse_call.index_wxs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, engine, logger)
+        muse_call.index_wxs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
         muse_call_output = muse_call.call_wxs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
         muse_vcf = muse_sump.sump_wxs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
     else:
-        muse_call.index_wgs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, engine, logger)
+        muse_call.index_wgs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
         muse_call_output = muse_call.call_wgs(uuid, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, engine, logger)
         muse_vcf = muse_sump.sump_wgs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
     if eliminate_intermediate_files:
