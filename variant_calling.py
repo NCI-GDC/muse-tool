@@ -121,7 +121,7 @@ def main():
         log_dir = os.path.dirname(analysis_ready_tumor_bam_path)
     else:
         log_dir = args.log_dir
-    thread_count = str(args.thread_count)
+    thread_count = args.thread_count
     if not args.eliminate_intermediate_files:
         eliminate_intermediate_files = True
     else:
