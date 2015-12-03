@@ -217,7 +217,15 @@ def remove_dir(adir, engine, logger):
     shutil.rmtree(adir)
     logger.info('removed directory: %s' % adir)
 
+def do_pool_cmds(cmd, logger):
+    env = update_env(logger)
+    logger.info('running cmd: %s' % cmd)
+    output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = output.communicate()
+    logger.info('completed cmds: %s' % str(cmd))
+    return output.returncode
+
 def multi_cmds(cmds, thread_count, logger):
     p = Pool(int(thread_count))
-    values = p.map(do_piped_commands(cmds, logger), cmds, 1)
+    values = p.map(do_pool_cmds(cmds, logger), cmds, 1)
     return values
