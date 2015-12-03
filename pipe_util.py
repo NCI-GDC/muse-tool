@@ -227,5 +227,5 @@ def do_pool_commands(cmd, logger):
 
 def multi_commands(cmds, thread_count, logger):
     p = Pool(int(thread_count))
-    values = p.map(do_pool_commands, cmds, 1)
+    values = p.map(do_pool_commands(logger), cmds, 1)
     return values
