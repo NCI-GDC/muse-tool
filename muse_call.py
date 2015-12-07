@@ -16,7 +16,7 @@ def fai_chunk(fai_path, blocksize):
         for i in range(1, l, blocksize):
             yield (seq, i, min(i+blocksize-1, l))
 
-def muse_call_cmd_iter(muse, ref, fai_path, blocksize, tumor_bam, normal_bam, output_base):
+def muse_call_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, normal_bam, output_base):
   template = string.Template("/usr/bin/time -v ${MUSE} call -f ${REF} -r ${REGION} ${TUMOR_BAM} ${NORMAL_BAM} -O ${OUTPUT_BASE}.${BLOCK_NUM}")
   for i, block in enumerate(fai_chunk(fai_path, blocksize)):
     cmd = template.substitute(
@@ -46,7 +46,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     logger.info('running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
     home_dir = os.path.expanduser('~')
     muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
-    cmds = list(muse_call_cmd_iter(
+    cmds = list(muse_call_cmd_template(
                                    muse = muse_path,
                                    ref = reference_fasta_name,
                                    fai_path = fai_path,
