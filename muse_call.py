@@ -43,7 +43,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
   if pipe_util.already_step(step_dir, tumor_bam_name + '_MuSE_call', logger):
     logger.info('already completed step `MuSE call` of: %s' % analysis_ready_tumor_bam_path)
   else:
-    logger.info('running step `MuSE call` of: %s' % analysis_ready_tumor_bam_path)
+    logger.info('running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
     home_dir = os.path.expanduser('~')
     muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
     cmds = list(muse_call_cmd_iter(
@@ -55,7 +55,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    normal_bam = analysis_ready_normal_bam_path,
                                    output_base = os.path.join(step_dir, 'output.file'))
     )
-    outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count, logger)
+    outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count)
     first = True
     merge_output = muse_call_output_path
     with open (merge_output, "w") as ohandle:
@@ -65,5 +65,5 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
             if first or not line.startswith('#'):
               ohandle.write(line)
     pipe_util.create_already_step(step_dir, tumor_bam_name + '_MuSE_call', logger)
-    logger.info('completed running step `MuSE call` of: %s' % analysis_ready_tumor_bam_path)
+    logger.info('completed running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
   return muse_call_output_path
