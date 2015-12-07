@@ -56,13 +56,12 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    output_base = os.path.join(step_dir, 'output.file'))
     )
     outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count)
-    first = True
     merge_output = muse_call_output_path
     with open (merge_output, "w") as ohandle:
       for cmd, out in cmds:
         with open(out) as handle:
           for line in handle:
-            if first or not line.startswith('#'):
+            if not line.startswith('#'):
               ohandle.write(line)
     pipe_util.create_already_step(step_dir, tumor_bam_name + '_MuSE_call', logger)
     logger.info('completed running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
