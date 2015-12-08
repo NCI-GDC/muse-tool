@@ -20,7 +20,7 @@ def sump_wxs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
     logger.info('running step `MuSE sump` of the tumor bam: %s' % input_name)
     home_dir = os.path.expanduser('~')
     muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
-    cmd = [muse_path, '-I', muse_call_output_path, '-E', '-O', muse_sump_output_path, '-D', dbsnp_known_snp_sites]
+    cmd = [muse_path, 'sump', '-I', muse_call_output_path, '-E', '-O', muse_sump_output_path, '-D', dbsnp_known_snp_sites]
     output = pipe_util.do_command(cmd, logger)
     df = time_util.store_time(uuid, cmd, output, logger)
     df['muse_call_output'] = muse_call_output_path
@@ -48,7 +48,7 @@ def sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
     logger.info('running step `MuSE sump` of the tumor bam: %s' % input_name)
     home_dir = os.path.expanduser('~')
     muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
-    cmd = [muse_path, '-I', muse_call_output_path, '-G', '-O', muse_sump_output_path, '-D', dbsnp_known_snp_sites]
+    cmd = [muse_path, 'sump', '-I', muse_call_output_path, '-G', '-O', muse_sump_output_path, '-D', dbsnp_known_snp_sites]
     output = pipe_util.do_command(cmd, logger)
     df = time_util.store_time(uuid, cmd, output, logger)
     df['muse_call_output'] = muse_call_output_path
