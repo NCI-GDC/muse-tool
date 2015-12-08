@@ -4,7 +4,7 @@ import df_util
 import pipe_util
 import time_util
 
-def muse_sump.sump_wxs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger):
+def sump_wxs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger):
   sump_dir = os.path.dirname(muse_call_output_path)
   input_name = os.path.basename(muse_call_output_path)
   input_base, input_ext = os.path.splitext(input_name)
@@ -32,7 +32,7 @@ def muse_sump.sump_wxs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engin
     logger.info('completed running `MuSE sump` of the tumor bam: %s' % input_name)
   return muse_sump_output_path
 
-def muse_sump.sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger):
+def sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger):
   sump_dir = os.path.dirname(muse_call_output_path)
   input_name = os.path.basename(muse_call_output_path)
   input_base, input_ext = os.path.splitext(input_name)
