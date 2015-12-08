@@ -225,5 +225,5 @@ def do_pool_commands(cmd):
 
 def multi_commands(cmds, thread_count, logger):
     p = Pool(int(thread_count))
-    output = p.map(do_pool_commands, zip(cmds, repeat(logger)))
+    output = p.starmap(do_pool_commands, zip(cmds, repeat(logger)))
     return output
