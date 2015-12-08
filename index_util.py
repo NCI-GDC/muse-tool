@@ -5,7 +5,6 @@ import sys
 import df_util
 import pipe_util
 import time_util
-import pysam
 import pandas as pd
 
 def samtools_bam_index(uuid, bam_path, engine, logger):
