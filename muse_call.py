@@ -1,6 +1,7 @@
 import os
 import sys
 import string
+import tempfile
 import df_util
 import pipe_util
 import time_util
@@ -46,6 +47,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     logger.info('running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
     home_dir = os.path.expanduser('~')
     muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
+    tmpdir = os.path.abspath(tempfile.mkdtemp(dir=step_dir, prefix="muse_tmp_"))
     cmds = list(muse_call_cmd_template(
                                    muse = muse_path,
                                    ref = reference_fasta_name,
@@ -53,16 +55,18 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    blocksize = blocksize,
                                    tumor_bam = analysis_ready_tumor_bam_path,
                                    normal_bam = analysis_ready_normal_bam_path,
-                                   output_base = os.path.join(step_dir, 'output.file'))
+                                   output_base = os.path.join(tmpdir, 'output.file'))
     )
     outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count)
     merge_output = muse_call_output_path
+    first = True
     with open (merge_output, "w") as ohandle:
       for cmd, out in cmds:
         with open(out) as handle:
           for line in handle:
-            if not line.startswith('#'):
+            if first or not line.startswith('#'):
               ohandle.write(line)
+        first = False
     pipe_util.create_already_step(step_dir, tumor_bam_name + '_MuSE_call', logger)
     logger.info('completed running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
   return muse_call_output_path
