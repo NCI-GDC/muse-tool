@@ -6,6 +6,7 @@ import sys
 import df_util
 import time_util
 from multiprocessing import Pool
+from itertools import repeat
 
 def update_env(logger):
     env = dict()
