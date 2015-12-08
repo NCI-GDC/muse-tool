@@ -222,8 +222,8 @@ def do_pool_commands(cmd):
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = output.communicate()
     return output.returncode
-
+    
 def multi_commands(cmds, thread_count, logger):
-    p = Pool(int(thread_count))
-    output = p.starmap(do_pool_commands, zip(cmds, repeat(logger)))
+    p = Pool(int(thread_count), initargs=(logger,))
+    output = p.map(do_pool_commands, cmds)
     return output
