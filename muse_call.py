@@ -58,7 +58,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    normal_bam = analysis_ready_normal_bam_path,
                                    output_base = os.path.join(tmpdir, 'output.file'))
     )
-    outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count)
+    outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count, logger)
     merge_output = muse_call_output_path
     first = True
     with open (merge_output, "w") as ohandle:
@@ -68,6 +68,12 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
             if first or not line.startswith('#'):
               ohandle.write(line)
         first = False
+    for cmd, output in zip(cmds, outputs):
+      df = time_util.store_time(uuid, cmd, output, logger)
+      df['analysis_ready_tumor_bam_path'] = analysis_ready_tumor_bam_path
+      unique_key_dict = {'uuid': uuid, 'analysis_ready_tumor_bam_path': analysis_ready_tumor_bam_path}
+      table_name = 'time_mem_MuSE_call'
+      df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
     pipe_util.create_already_step(step_dir, tumor_bam_name + '_MuSE_call', logger)
     logger.info('completed running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
     shutil.rmtree(tmpdir)
