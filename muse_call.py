@@ -32,7 +32,7 @@ def muse_call_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, normal_bam
     )
     yield cmd, "%s.%s.MuSE.txt" % (output_base, i)
 
-def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
+def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, tmpdir, blocksize, engine, logger):
   call_dir = os.path.dirname(analysis_ready_tumor_bam_path)
   tumor_bam_name = os.path.basename(analysis_ready_tumor_bam_path)
   tb_base, tb_ext = os.path.splitext(tumor_bam_name)
@@ -47,7 +47,6 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     logger.info('running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
     home_dir = os.path.expanduser('~')
     muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
-    tmpdir = os.path.abspath(tempfile.mkdtemp(dir=step_dir, prefix="muse_tmp_"))
     cmds = list(muse_call_cmd_template(
                                    muse = muse_path,
                                    ref = reference_fasta_name,
