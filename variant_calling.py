@@ -8,11 +8,10 @@ import sqlalchemy
 import pipe_util
 import df_util
 import time_util
-import bam_util
-#import bam_validate
+import index_util
 import verify_util
 import muse_call
-#import muse_sump
+import muse_sump
 
 def is_dir(d):
     '''
@@ -154,7 +153,8 @@ def main():
     if os.path.isfile(fai_path):
       logger.info('reference_fai_path=%s' % fai_path)
     else:
-      fai_path = bam_util.samtools_faidx(uuid, reference_fasta_name, engine, logger)
+      fai_path = index_util.samtools_faidx(uuid, reference_fasta_name, engine, logger)
+      logger.info('reference_fai_path=%s' % fai_path)
     
     #index input bam files if needed.
     bam_path = []
@@ -164,20 +164,27 @@ def main():
         if os.path.isfile(bai_path):
             logger.info('analysis_ready_bam_bai_path=%s' % bai_path)
         else:
-            bai_path = bam_util.samtools_bam_index(uuid, path, engine, logger)
+            bai_path = index_util.samtools_bam_index(uuid, path, engine, logger)
+            logger.info('analysis_ready_bam_bai_path=%s' % bai_path)
             
     #MuSE call
-    muse_call_output = muse_call.call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
-"""  
+    muse_call_output_path = muse_call.call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
+
+    #MuSE sump
     if not args.Whole_genome_squencing_data:
-        muse_vcf = muse_sump.sump_wxs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
+        muse_vcf = muse_sump.sump_wxs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
     else:
-        muse_vcf = muse_sump.sump_wgs(uuid, muse_call_output, dbsnp_known_snp_sites, engine, logger)
+        muse_vcf = muse_sump.sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
+        
+    #picard sortvcf
+    muse_srt_vcf = index_util.picard_sortvcf(uuid, muse_vcf, reference_fasta_name, engine, logger)
+    
     if eliminate_intermediate_files:
-        pipe_util.remove_file_list(uuid, [muse_call_output], engine, logger)
+        pipe_util.remove_file_list(uuid, [muse_call_output_path], engine, logger)
+        pipe_util.remove_file_list(uuid, [muse_vcf], engine, logger)
+        
     if md5:
-        verify_util.store_md5_size(uuid, muse_vcf, engine, logger)
-"""
+        verify_util.store_md5_size(uuid, muse_srt_vcf, engine, logger)
 
 if __name__ == '__main__':
     main()
