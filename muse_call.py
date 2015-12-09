@@ -19,7 +19,7 @@ def fai_chunk(fai_path, blocksize):
             yield (seq, i, min(i+blocksize-1, l))
 
 def muse_call_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, normal_bam, output_base):
-  template = string.Template("//usr/bin/time -v ${MUSE} call -f ${REF} -r ${REGION} ${TUMOR_BAM} ${NORMAL_BAM} -O ${OUTPUT_BASE}.${BLOCK_NUM}")
+  template = string.Template("/usr/bin/time -v ${MUSE} call -f ${REF} -r ${REGION} ${TUMOR_BAM} ${NORMAL_BAM} -O ${OUTPUT_BASE}.${BLOCK_NUM}")
   for i, block in enumerate(fai_chunk(fai_path, blocksize)):
     cmd = template.substitute(
                               dict(
