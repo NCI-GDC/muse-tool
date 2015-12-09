@@ -73,7 +73,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
             if first or not line.startswith('#'):
               ohandle.write(line)
         first = False
-    df=pd.DataFrame({'uuid': uuid, 'muse_call_timeusage': timeusage, 'analysis_ready_tumor_bam_path': analysis_ready_tumor_bam_path, 'muse_call_output': muse_call_output_path})
+    df=pd.DataFrame({'uuid': [uuid], 'muse_call_timeusage': [timeusage], 'analysis_ready_tumor_bam_path': [analysis_ready_tumor_bam_path], 'muse_call_output': [muse_call_output_path]})
     df['analysis_ready_tumor_bam_path'] = analysis_ready_tumor_bam_path
     df['muse_call_timeusage'] = timeusage
     df['muse_call_output'] = muse_call_output_path
