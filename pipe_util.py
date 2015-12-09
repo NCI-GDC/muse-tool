@@ -222,8 +222,13 @@ def do_pool_commands(cmd):
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = output.communicate()
     return output.returncode
-    
+
+def initializer(handle):
+    global handler
+    handler = handle
+
 def multi_commands(cmds, thread_count, logger):
-    p = Pool(int(thread_count), initargs=(logger,))
+    handler = logging.FileHandler( 'logFile' )
+    p = Pool(int(thread_count), initializer=initializer, initargs=(handler,))
     output = p.map(do_pool_commands, cmds)
     return output
