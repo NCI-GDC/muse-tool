@@ -221,9 +221,9 @@ def remove_dir(adir, engine, logger):
 def do_pool_commands(cmd):
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = output.communicate()
-    return output.returncode
+    return output
     
 def multi_commands(cmds, thread_count, logger):
     p = Pool(int(thread_count), initargs=(logger,))
-    output = p.map(do_command, cmds)
+    output = p.map(do_pool_commands, cmds)
     return output
