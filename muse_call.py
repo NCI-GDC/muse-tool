@@ -62,7 +62,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     start = time.time()
     outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count, logger)
     end = time.time()
-    print ('The time usage of MuSE call is %s' % (end - start))
+    timeusage = end - start
     merge_output = muse_call_output_path
     first = True
     with open (merge_output, "w") as ohandle:
@@ -72,13 +72,12 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
             if first or not line.startswith('#'):
               ohandle.write(line)
         first = False
-    """
-    df = time_util.store_time(uuid, cmd, output, logger)
     df['analysis_ready_tumor_bam_path'] = analysis_ready_tumor_bam_path
-    unique_key_dict = {'uuid': uuid, 'analysis_ready_tumor_bam_path': analysis_ready_tumor_bam_path}
+    df['muse_call_timeusage'] = timeusage
+    df['muse_call_output'] = muse_call_output_path
+    unique_key_dict = {'uuid': uuid, 'muse_call_timeusage': timeusage, 'analysis_ready_tumor_bam_path': analysis_ready_tumor_bam_path, 'muse_call_output': muse_call_output_path}
     table_name = 'time_mem_MuSE_call'
     df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
-    """
     pipe_util.create_already_step(step_dir, tumor_bam_name + '_MuSE_call', logger)
     logger.info('completed running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
     shutil.rmtree(tmpdir)
