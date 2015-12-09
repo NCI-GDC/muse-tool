@@ -223,12 +223,7 @@ def do_pool_commands(cmd):
     stdout, stderr = output.communicate()
     return output.returncode
 
-def initializer(handle):
-    global handler
-    handler = handle
-
 def multi_commands(cmds, thread_count, logger):
-    handler = logging.FileHandler( 'logFile' )
-    p = Pool(int(thread_count), initializer=initializer, initargs=(handler,))
-    output = p.map(do_pool_commands, cmds)
+    p = Pool(int(thread_count), initargs=(logger,))
+    output = p.map(do_shell_command, cmds)
     return output
