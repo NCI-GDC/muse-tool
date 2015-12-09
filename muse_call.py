@@ -60,7 +60,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    output_base = os.path.join(tmpdir, 'output.file'))
     )
     outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count, logger)
-    timeusage = time.process_time(outputs)
+    timeusage = time.process_time()
     print ('The time usage of MuSE call is %s' % timeusage)
     merge_output = muse_call_output_path
     first = True
