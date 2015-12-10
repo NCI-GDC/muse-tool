@@ -219,12 +219,14 @@ def remove_dir(adir, engine, logger):
     shutil.rmtree(adir)
     logger.info('removed directory: %s' % adir)
 
-def do_pool_commands(cmd, logfile, lock=Lock()):
-    with open(logfile, "a") as f:
-        p = subprocess.Popen(cmd, shell=True, stdout=f, bufsize=1)
+def do_pool_commands(cmd, logger, lock=Lock()):
+    output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, bufsize=1)
+    with lock:
+        logger.info('contents of output(s)=%s' % output.decode().format())
+        logger.info('completed cmd: %s' % str(cmd))
     return p.wait()
     
-def multi_commands(cmds, thread_count, logfile):
+def multi_commands(cmds, thread_count, logger):
     p = Pool(int(thread_count))
-    output = p.starmap(do_pool_commands, zip(cmds, repeat(logfile)))
+    output = p.starmap(do_pool_commands, zip(cmds, repeat(logger)))
     return output
