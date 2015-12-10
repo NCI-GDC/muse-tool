@@ -7,6 +7,7 @@ import sys
 import df_util
 import time_util
 from multiprocessing.dummy import Pool, Lock
+from itertools import repeat
 
 def update_env(logger):
     env = dict()
@@ -227,6 +228,6 @@ def do_pool_commands(cmd, logfile, lock=Lock()):
     return p.wait()
     
 def multi_commands(cmds, thread_count, logfile):
-    p = Pool(int(thread_count), initargs=(logfile,))
-    output = p.map(do_pool_commands, cmds)
+    p = Pool(int(thread_count))
+    output = p.starmap(do_pool_commands, zip(cmds, repeat(logfile)))
     return output
