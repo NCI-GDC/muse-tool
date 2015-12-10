@@ -40,7 +40,7 @@ def muse_call_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, normal_bam
 def run(cmds):
   for i, cmd in enumerate(cmds):
     with open('log%d.txt' % i, 'wb') as file:
-        return subprocess.call([cmd, str(i)], stdout=file)
+        return subprocess.call(cmd, stdout=file)
         
 def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
   call_dir = os.path.dirname(analysis_ready_tumor_bam_path)
@@ -69,9 +69,9 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     )
     print (cmds)
     start = time.time()
-    outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count, logger)
-    #pool = Pool(int(thread_count))
-    #return_codes = pool.map(run(list(a[0] for a in cmds)), cmds)
+    #outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count, logger)
+    pool = Pool(int(thread_count))
+    return_codes = pool.map(run(list(a[0] for a in cmds)), cmds)
     end = time.time()
     timeusage = end - start
     merge_output = muse_call_output_path
