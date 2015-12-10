@@ -9,7 +9,7 @@ import pipe_util
 import time_util
 import pandas as pd
 from multiprocessing.dummy import Pool # use threads
-from subprocess import call
+import subprocess
 
 def fai_chunk(fai_path, blocksize):
   seq_map = {}
