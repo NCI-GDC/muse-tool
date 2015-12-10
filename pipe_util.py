@@ -220,7 +220,7 @@ def remove_dir(adir, engine, logger):
     logger.info('removed directory: %s' % adir)
 
 def do_pool_commands(cmd, logfile, lock=Lock()):
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, bufsize=1)
+    p = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, bufsize=1)
     for line in iter(p.stdout.readline, b''):
         with lock:
             print((p.pid, line.rstrip()), file = logfile)
