@@ -39,7 +39,7 @@ def muse_call_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, normal_bam
     
 def run(cmds):
   for i in cmds:
-    with open('log%d.txt' % i, 'wb') as file:
+    with open('log%d.txt' % int(i), 'wb') as file:
         return subprocess.call([cmds, str(i)], stdout=file)
         
 def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
