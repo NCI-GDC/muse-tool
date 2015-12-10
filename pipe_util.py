@@ -227,6 +227,6 @@ def do_pool_commands(cmd, logfile, lock=Lock()):
     return p.wait()
     
 def multi_commands(cmds, thread_count, logfile):
-    p = Pool(int(thread_count))
+    p = Pool(int(thread_count), initargs=(logfile,))
     output = p.map(do_pool_commands, cmds)
     return output
