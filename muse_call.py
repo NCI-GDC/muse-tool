@@ -39,7 +39,7 @@ def muse_call_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, normal_bam
     
 
 def do_pool_commands(cmd, lock=Lock()):
-    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, bufsize=1)
+    p = Popen(cmd, shell=True, stdout=PIPE, bufsize=1)
     #stdout, stderr = p.communicate()
     for line in iter(p.stdout.readline, b''):
         with lock:
