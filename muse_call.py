@@ -40,12 +40,12 @@ def muse_call_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, normal_bam
 
 def do_pool_commands(cmd, lock=Lock()):
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, bufsize=1)
-    stdout, stderr = p.communicate()
+    #stdout, stderr = p.communicate()
     for line in iter(p.stdout.readline, b''):
         with lock:
             print(p.pid, line.rstrip())
     p.stdout.close()
-    return output.returncode
+    return p.returncode
     
 def multi_commands(cmds, thread_count):
     p = Pool(int(thread_count))
