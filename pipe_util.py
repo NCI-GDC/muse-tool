@@ -222,10 +222,10 @@ def remove_dir(adir, engine, logger):
 def do_pool_commands(cmd, logfile, lock=Lock()):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, bufsize=1)
     output = p.communicate()
-    log_file = open(logfile, 'a')
-    log_file.write(output)
-    log_file.write('\n')
-    log_file.close()
+    with lock:
+        log_file = open(logfile, 'a')
+        log_file.write(output)
+        log_file.close()
     return p.wait()
     
 def multi_commands(cmds, thread_count, logfile):
