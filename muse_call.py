@@ -37,17 +37,19 @@ def muse_call_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, normal_bam
     )
     yield cmd, "%s.%s.MuSE.txt" % (output_base, i)
     
-def run(cmds, lock=Lock()):
-    p = Popen(cmds, stdout=PIPE, bufsize=1)
+
+def do_pool_commands(cmd, lock=Lock()):
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, bufsize=1)
+    stdout, stderr = p.communicate()
     for line in iter(p.stdout.readline, b''):
         with lock:
             print(p.pid, line.rstrip())
     p.stdout.close()
-    return p.wait()
+    return output.returncode
     
 def multi_commands(cmds, thread_count):
     p = Pool(int(thread_count))
-    output = p.map(run, cmds)
+    output = p.map(do_pool_commands, cmds)
     return output
 
 def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
