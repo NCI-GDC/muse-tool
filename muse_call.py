@@ -70,7 +70,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     start = time.time()
     #outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count, logger)
     pool = Pool(int(thread_count))
-    return_codes = pool.map(run, cmds) 
+    return_codes = pool.map(run(list(a[0] for a in cmds), cmds) 
     end = time.time()
     timeusage = end - start
     merge_output = muse_call_output_path
