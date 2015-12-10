@@ -223,7 +223,7 @@ def do_pool_commands(cmd, logfile, lock=Lock()):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, bufsize=1)
     for line in iter(p.stdout.readline, b''):
         with lock:
-            print((p.pid, line.rstrip()), file = open(logfile, 'w'))
+            print((p.pid, line.rstrip()), file = logfile)
     p.stdout.close()
     return p.wait()
     
