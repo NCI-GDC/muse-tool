@@ -72,6 +72,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
             if first or not line.startswith('#'):
               ohandle.write(line)
         first = False
+    """
     df=pd.DataFrame({'uuid': [uuid], 'muse_call_timeusage': [timeusage], 'analysis_ready_tumor_bam_path': [analysis_ready_tumor_bam_path], 'muse_call_output': [muse_call_output_path]})
     df['analysis_ready_tumor_bam_path'] = analysis_ready_tumor_bam_path
     df['muse_call_timeusage'] = timeusage
@@ -79,6 +80,7 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     unique_key_dict = {'uuid': uuid, 'muse_call_timeusage': timeusage, 'analysis_ready_tumor_bam_path': analysis_ready_tumor_bam_path, 'muse_call_output': muse_call_output_path}
     table_name = 'time_mem_MuSE_call'
     df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
+    """
     pipe_util.create_already_step(step_dir, tumor_bam_name + '_MuSE_call', logger)
     logger.info('completed running step `MuSE call` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
     shutil.rmtree(tmpdir)
