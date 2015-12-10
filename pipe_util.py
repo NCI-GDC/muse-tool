@@ -5,8 +5,7 @@ import subprocess
 import sys
 import df_util
 import time_util
-from multiprocessing import Pool
-from itertools import repeat
+from multiprocessing.dummy import Pool, Lock
 
 def update_env(logger):
     env = dict()
@@ -218,12 +217,15 @@ def remove_dir(adir, engine, logger):
     shutil.rmtree(adir)
     logger.info('removed directory: %s' % adir)
 
-def do_pool_commands(cmd):
-    output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = output.communicate()
-    return output.returncode
-
-def multi_commands(cmds, thread_count, logger):
-    p = Pool(int(thread_count), initargs=(logger,))
+def do_pool_commands(cmd, lock=Lock()):
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, bufsize=1)
+    for line in iter(p.stdout.readline, b''):
+        with lock:
+            print(p.pid, line.rstrip())
+    p.stdout.close()
+    return p.wait()
+    
+def multi_commands(cmds, thread_count):
+    p = Pool(int(thread_count))
     output = p.map(do_pool_commands, cmds)
     return output
