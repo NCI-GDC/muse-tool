@@ -8,8 +8,8 @@ import df_util
 import pipe_util
 import time_util
 import pandas as pd
-from multiprocessing.dummy import Pool # use threads
-import subprocess
+from multiprocessing.dummy import Pool, Lock
+from subprocess import Popen, PIPE
 
 def fai_chunk(fai_path, blocksize):
   seq_map = {}
@@ -37,11 +37,19 @@ def muse_call_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, normal_bam
     )
     yield cmd, "%s.%s.MuSE.txt" % (output_base, i)
     
-def run(cmds):
-  for i, cmd in enumerate(cmds):
-    with open('log%d.txt' % i, 'wb') as file:
-        return subprocess.call(cmd, stdout=file)
-        
+def run(cmds, lock=Lock()):
+    p = Popen(cmds, stdout=PIPE, bufsize=1)
+    for line in iter(p.stdout.readline, b''):
+        with lock:
+            print(p.pid, line.rstrip())
+    p.stdout.close()
+    return p.wait()
+    
+def multi_commands(cmds, thread_count):
+    p = Pool(int(thread_count))
+    output = p.map(run, cmds)
+    return output
+
 def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
   call_dir = os.path.dirname(analysis_ready_tumor_bam_path)
   tumor_bam_name = os.path.basename(analysis_ready_tumor_bam_path)
@@ -66,12 +74,9 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
                                    tumor_bam = analysis_ready_tumor_bam_path,
                                    normal_bam = analysis_ready_normal_bam_path,
                                    output_base = os.path.join(tmpdir, 'output.file'))
-    )
-    print (cmds)
+    ) 
     start = time.time()
-    #outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count, logger)
-    pool = Pool(int(thread_count))
-    return_codes = pool.map(run(list(a[0] for a in cmds)), cmds)
+    outputs = multi_commands(list(a[0] for a in cmds), thread_count)
     end = time.time()
     timeusage = end - start
     merge_output = muse_call_output_path
