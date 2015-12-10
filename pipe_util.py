@@ -6,7 +6,7 @@ import sys
 import df_util
 import time_util
 from multiprocessing.dummy import Pool, Lock
-from __future__ import print_function
+import print_function
 
 def update_env(logger):
     env = dict()
