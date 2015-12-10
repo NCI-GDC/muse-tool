@@ -218,7 +218,7 @@ def remove_dir(adir, engine, logger):
     shutil.rmtree(adir)
     logger.info('removed directory: %s' % adir)
 
-def do_pool_commands(cmd, lock=Lock(), logfile):
+def do_pool_commands(cmd, logfile, lock=Lock()):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, bufsize=1)
     for line in iter(p.stdout.readline, b''):
         with lock:
