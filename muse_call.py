@@ -45,7 +45,7 @@ def do_pool_commands(cmd, lock=Lock()):
         with lock:
             print(p.pid, line.rstrip())
     p.stdout.close()
-    return p.returncode
+    return p.wait()
     
 def multi_commands(cmds, thread_count):
     p = Pool(int(thread_count))
