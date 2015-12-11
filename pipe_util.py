@@ -223,7 +223,9 @@ def do_pool_commands(cmd, logger, lock=Lock()):
     #logger.info('running cmd: %s' % cmd)
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1)
     #stdout = output.communicate()
-    logger.info('contents of output=%s' % output.stdout.readline)
+    for line in iter(output.stdout.readline, b''):
+        with lock:
+            logger.info('contents of output=%s' % line.rstrip())
     #logger.info('completed cmd: %s' % str(cmd))
     return output.wait()
     
