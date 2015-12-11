@@ -1,4 +1,3 @@
-#from __future__ import print_function
 import logging
 import os
 import shutil
@@ -6,7 +5,7 @@ import subprocess
 import sys
 import df_util
 import time_util
-from multiprocessing.dummy import Pool, Lock
+from multiprocessing.dummy import Pool
 from itertools import repeat
 
 def update_env(logger):
