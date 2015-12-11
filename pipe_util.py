@@ -218,13 +218,17 @@ def remove_dir(adir, engine, logger):
     shutil.rmtree(adir)
     logger.info('removed directory: %s' % adir)
 
-def do_pool_commands(cmd, logger):
+def do_pool_commands(uuid, cmd, engine, logger):
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output_stdout = output.communicate()[1]
     logger.info('contents of output=%s' % output_stdout.decode("utf-8").format())
+    df = time_util.store_time(uuid, cmd, output_stdout, logger)
+    unique_key_dict = {'uuid': uuid}
+    table_name = 'time_mem_MuSE_multi_chunks_call_processes'
+    df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
     return output.wait()
     
-def multi_commands(cmds, thread_count, logger):
+def multi_commands(uuid, cmds, thread_count, engine, logger):
     pool = Pool(int(thread_count))
-    output = pool.starmap(do_pool_commands, zip(cmds, repeat(logger)))
+    output = pool.starmap(do_pool_commands, zip(cmds, repeat(uuid, engine, logger)))
     return output
