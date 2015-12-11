@@ -220,11 +220,11 @@ def remove_dir(adir, engine, logger):
     logger.info('removed directory: %s' % adir)
 
 def do_pool_commands(cmd, logger, lock=Lock()):
-    logger.info('running cmd: %s' % cmd)
+    #logger.info('running cmd: %s' % cmd)
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1)
     #stdout = output.communicate()
-    logger.info('contents of output=%s' % output.stdout)
-    logger.info('completed cmd: %s' % str(cmd))
+    logger.info('contents of output=%s' % output.stdout.readline)
+    #logger.info('completed cmd: %s' % str(cmd))
     return output.wait()
     
 def multi_commands(cmds, thread_count, logger):
