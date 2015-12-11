@@ -62,6 +62,13 @@ def call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_norma
     ) 
     #outputs = pipe_util.do_piped_commands(cmds, logger)
     outputs = pipe_util.multi_commands(list(a[0] for a in cmds), thread_count, logger)
+    cmd = 'MuSE_call'
+    df = time_util.store_time(uuid, cmd, outputs, logger)
+    df['analysis_ready_tumor_bam_path'] = analysis_ready_tumor_bam_path
+    df['muse_call_output'] = muse_call_output_path
+    unique_key_dict = {'uuid': uuid, 'analysis_ready_tumor_bam_path': analysis_ready_tumor_bam_path, 'muse_call_output': muse_call_output_path}
+    table_name = 'time_mem_MuSE_call'
+    df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
     merge_output = muse_call_output_path
     first = True
     with open (merge_output, "w") as ohandle:
