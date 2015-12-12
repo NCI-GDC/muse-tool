@@ -222,9 +222,10 @@ def remove_dir(adir, engine, logger):
 def do_pool_commands(cmd, uuid, engine, logger):
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output_stdout = output.communicate()[1]
-    logger.info('contents of output=%s' % output_stdout.decode("utf-8").format())
+    logger.info('contents of output=%s' % output_stdout.decode().format())
     df = time_util.store_time(uuid, cmd, output_stdout, logger)
-    unique_key_dict = {'uuid': uuid}
+    df['cmd'] = cmd
+    unique_key_dict = {'uuid': uuid, 'cmd': cmd}
     table_name = 'time_mem_MuSE_multi_chunks_call_processes'
     df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
     return output.wait()
