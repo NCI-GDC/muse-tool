@@ -6,8 +6,7 @@ import sys
 import df_util
 import time_util
 from multiprocessing.dummy import Pool
-from functools import partial
-from itertools import repeat
+from itertools import cycle
 
 def update_env(logger):
     env = dict()
@@ -219,7 +218,7 @@ def remove_dir(adir, engine, logger):
     shutil.rmtree(adir)
     logger.info('removed directory: %s' % adir)
 
-def do_pool_commands(uuid, cmd, engine, logger):
+def do_pool_commands(cmd, uuid, engine, logger):
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output_stdout = output.communicate()[1]
     logger.info('contents of output=%s' % output_stdout.decode("utf-8").format())
@@ -231,6 +230,6 @@ def do_pool_commands(uuid, cmd, engine, logger):
     
 def multi_commands(uuid, cmds, thread_count, engine, logger):
     pool = Pool(int(thread_count))
-    output = pool.starmap(do_pool_commands, zip(cmds, repeat(uuid), repeat(engine), repeat(logger)))
+    output = pool.starmap(do_pool_commands, zip(cmds, cycle([uuid, engine, logger])))
     #output = pool.map(partial(do_pool_commands, uuid=uuid, engine=engine, logger=logger), cmds)
     return output
