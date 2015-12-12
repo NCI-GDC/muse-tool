@@ -220,6 +220,7 @@ def remove_dir(adir, engine, logger):
     logger.info('removed directory: %s' % adir)
 
 def do_pool_commands(cmd, uuid, engine, logger):
+    logger.info('running muse multi chunks call: %s' % cmd)
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output_stdout = output.communicate()[1]
     logger.info('contents of output=%s' % output_stdout.decode().format())
@@ -228,6 +229,7 @@ def do_pool_commands(cmd, uuid, engine, logger):
     unique_key_dict = {'uuid': uuid, 'cmd': cmd}
     table_name = 'time_mem_MuSE_multi_chunks_call_processes'
     df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
+    logger.info('completed muse multi chunks call: %s' % str(cmd))
     return output.wait()
     
 def multi_commands(uuid, cmds, thread_count, engine, logger):
