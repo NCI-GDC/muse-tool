@@ -231,6 +231,6 @@ def do_pool_commands(uuid, cmd, engine, logger):
     
 def multi_commands(uuid, cmds, thread_count, engine, logger):
     pool = Pool(int(thread_count))
-    #output = pool.starmap(do_pool_commands, zip(cmds, repeat(uuid, engine, logger)))
-    output = pool.map(partial(do_pool_commands, uuid=uuid, engine=engine, logger=logger), cmds)
+    output = pool.starmap(do_pool_commands, zip(cmds, repeat(uuid), repeat(engine), repeat(logger)))
+    #output = pool.map(partial(do_pool_commands, uuid=uuid, engine=engine, logger=logger), cmds)
     return output
