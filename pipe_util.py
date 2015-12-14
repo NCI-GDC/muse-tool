@@ -66,57 +66,7 @@ def do_shell_command(cmd, logger, stdout=subprocess.STDOUT, stderr=subprocess.PI
         sys.exit('failed cmd: %s' % str(timecmd))
     logger.info('completed cmd: %s' % str(timecmd))
     return output
-
-
-def do_stdout_command(cmd, logger, stdout=subprocess.STDOUT):
-    output = str()
-    env = update_env(logger)
-    timecmd = cmd
-    timecmd.insert(0, '/usr/bin/time')
-    timecmd.insert(1, '-v')
-    logger.info('running cmd: %s' % timecmd)
-    if stdout is not subprocess.STDOUT:
-        stdout_open = open(stdout, 'wb')
-    try:
-        with subprocess.Popen(timecmd, stdout=stdout_open, stderr=subprocess.PIPE, env=env) as proc:
-            logger.info(proc.stderr.read().decode().format())
-            output = proc.stderr.read()
-    except Exception as e:
-        logger.debug('failed cmd: %s' % str(timecmd))
-        logger.debug(e.output)
-        logger.debug('exception: %s' % str(e))
-        sys.exit('failed cmd: %s' % str(timecmd))
-    logger.info('completed cmd: %s' % str(timecmd))
-    return output
-
-
-def do_piped_commands(cmdlist, logger):
-    env = update_env(logger)
-    popen_list = list()
-    first_flag = True
-    timecmdlist = cmdlist
-    i = 0
-    logger.info('running piped cmds: %s' % cmdlist)
-    for timecmd in timecmdlist:
-        try:
-            logger.info('create piped command ' + str(i) + ':' + str(timecmd))
-            prev_pipe = popen_list[i - 1]
-            popen_list.append(subprocess.Popen(timecmd, stdin=prev_pipe.stdout, env=env))  # stderr=subprocess.STDOUT,
-            i += 1
-        except Exception as e:
-            logger.debug('failed cmd: %s' % str(timecmd))
-            #logger.debug(e.output)
-            logger.debug('exception: %s' % e)
-            sys.exit('failed cmd: %s' % str(timecmd))
-    for popencmd in popen_list[:-1]:
-        popencmd.stdout.close()
-    output = popen_list[-1].communicate()[0]
-    logger.info('completed piped cmds: %s' % str(timecmdlist))
-    logger.info('contents of piped output=%s' % output)
-    output_1 = popen_list[-1].communicate()[1]
-    logger.info('output_1=%s' % output_1)
-    return output
-
+    
                 
 def get_dirlevels(adir):
     dir_split = adir.split('/')
