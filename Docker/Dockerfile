@@ -29,8 +29,7 @@ RUN apt-get update && apt-get install -y --force-yes \
     time \
     wget \
     samtools \
-    tabix \
-    bgzip
+    tabix 
 
 RUN apt-get install -y --reinstall libpython3.4-stdlib
 
