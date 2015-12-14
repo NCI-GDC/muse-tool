@@ -48,7 +48,6 @@ def samtools_faidx(uuid, reference_fasta_name, engine, logger):
         logger.info('completed running `samtools faidx` of %s' % reference_fasta_name)
         lines = open(fai_path).readlines()
         open(fai_path, 'w').writelines(lines[0:25])
-        fai_path.close()
     return fai_path
 
 def picard_CreateSequenceDictionary(uuid, reference_fasta_name, engine, logger):
