@@ -36,7 +36,7 @@ def bgzip_compress(uuid, dbsnp_known_snp_sites, engine, logger):
         logger.info('already completed step `bgzip compress of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
     else:
         logger.info('running step `bgzip compress of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
-        cmd = [dbsnp_known_snp_sites, '|', 'bgzip', '>', dbsnp_bgz_path]
+        cmd = ['cat', dbsnp_known_snp_sites, '|', 'bgzip', '>', dbsnp_bgz_path]
         shell_cmd = ' '.join(cmd)
         output = pipe_util.do_shell_command(shell_cmd, logger)
         df = time_util.store_time(uuid, shell_cmd, output, logger)
