@@ -28,34 +28,46 @@ def samtools_bam_index(uuid, bam_path, engine, logger):
         logger.info('completed running `samtools index` of %s' % bam_path)
     return bai_path
 
-def bgzip_compress_tabix_index(uuid, dbsnp_known_snp_sites, engine, logger):
+def bgzip_compress(uuid, dbsnp_known_snp_sites, engine, logger):
+    dbsnp_file = os.path.basename(dbsnp_known_snp_sites)
     dbsnp_bgz_path = dbsnp_known_snp_sites + '.bgz'
-    dbsnp_tbi_path = dbsnp_bgz_path + '.tbi'
     out_dir = os.path.dirname(dbsnp_known_snp_sites)
-    if pipe_util.already_step(out_dir, dbsnp_known_snp_sites + '_bgz_tbi', logger):
-        logger.info('already completed step `bgzip compress and tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
+    if pipe_util.already_step(out_dir, dbsnp_file + '_bgz', logger):
+        logger.info('already completed step `bgzip compress of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
     else:
-        logger.info('running step `bgzip compress and tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
-        cmd1 = [dbsnp_known_snp_sites, '|', 'bgzip', '>', dbsnp_bgz_path]
-        shell_cmd = ' '.join(cmd1)
-        output1 = pipe_util.do_shell_command(shell_cmd, logger)
-        df1 = time_util.store_time(uuid, shell_cmd, output1, logger)
+        logger.info('running step `bgzip compress of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
+        cmd = [dbsnp_known_snp_sites, '|', 'bgzip', '>', dbsnp_bgz_path]
+        shell_cmd = ' '.join(cmd)
+        output = pipe_util.do_shell_command(shell_cmd, logger)
+        df = time_util.store_time(uuid, shell_cmd, output, logger)
         df['dbsnp_vcf_path'] = dbsnp_known_snp_sites
         df['dbsnp_bgz_path'] = dbsnp_bgz_path
-        unique_key_dict1 = {'uuid': uuid, 'dbsnp_vcf_path': dbsnp_known_snp_sites, 'dbsnp_bgz_path': dbsnp_bgz_path}
-        table_name1 = 'time_mem_bgzip_compress_dbsnp_vcf'
-        df_util.save_df_to_sqlalchemy(df1, unique_key_dict1, table_name1, engine, logger)
-        cmd2 = ['tabix', '-p', dbsnp_bgz_path]
-        output2 = pipe_util.do_command(cmd2, logger)
-        df2 = time_util.store_time(uuid, cmd2, output2, logger)
+        unique_key_dict = {'uuid': uuid, 'dbsnp_vcf_path': dbsnp_known_snp_sites, 'dbsnp_bgz_path': dbsnp_bgz_path}
+        table_name = 'time_mem_bgzip_compress_dbsnp_vcf'
+        df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
+        pipe_util.create_already_step(out_dir, dbsnp_file + '_bgz', logger)
+        logger.info('completed running `bgzip compress of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
+    return dbsnp_bgz_path
+    
+def tabix_index(uuid, dbsnp_known_snp_sites, engine, logger):
+    dbsnp_file = os.path.basename(dbsnp_known_snp_sites)
+    dbsnp_tbi_path = dbsnp_bgz_path + '.tbi'
+    out_dir = os.path.dirname(dbsnp_known_snp_sites)
+    if pipe_util.already_step(out_dir, dbsnp_file + '_tbi', logger):
+        logger.info('already completed step `tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
+    else:
+        logger.info('running step `tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
+        cmd = ['tabix', '-p', dbsnp_bgz_path]
+        output = pipe_util.do_command(cmd, logger)
+        df = time_util.store_time(uuid, cmd, output, logger)
         df['dbsnp_bgz_path'] = dbsnp_bgz_path
         df['dbsnp_tbi_path'] = dbsnp_tbi_path
-        unique_key_dict2 = {'uuid': uuid, 'dbsnp_bgz_path': dbsnp_bgz_path, 'dbsnp_tbi_path': dbsnp_tbi_path}
-        table_name2 = 'time_mem_tabix_index_dbsnp_bgz'
-        df_util.save_df_to_sqlalchemy(df2, unique_key_dict2, table_name2, engine, logger)
-        pipe_util.create_already_step(out_dir, dbsnp_known_snp_sites + '_bgz_tbi', logger)
-        logger.info('completed running `bgzip compress and tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
-    return dbsnp_bgz_path
+        unique_key_dict = {'uuid': uuid, 'dbsnp_bgz_path': dbsnp_bgz_path, 'dbsnp_tbi_path': dbsnp_tbi_path}
+        table_name = 'time_mem_tabix_index_dbsnp_bgz'
+        df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
+        pipe_util.create_already_step(out_dir, dbsnp_file + '_tbi', logger)
+        logger.info('completed running `tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
+    return dbsnp_tbi_path    
     
 def samtools_faidx(uuid, reference_fasta_name, engine, logger):
     ref_file = os.path.basename(reference_fasta_name)
