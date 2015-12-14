@@ -179,7 +179,11 @@ def main():
             dbsnp_tabix_path = index_util.tabix_index(uuid, dbsnp_known_snp_sites, engine, logger)
             logger.info('tabix index of dbsnp_bgz file =%s' % dbsnp_tabix_path)
     else:
-        sys.exit('!!!Reference dbSNP file should be bgzip compressed!!!')
+        dbsnp_known_snp_sites = index_util.bgzip_compress(uuid, dbsnp_known_snp_sites, engine, logger)
+        logger.info('dbsnp file is already bgzip compressed =%s' % dbsnp_known_snp_sites)
+        dbsnp_tabix_path = index_util.tabix_index(uuid, dbsnp_known_snp_sites, engine, logger)
+        logger.info('tabix index of dbsnp_bgz file =%s' % dbsnp_tabix_path)
+        #sys.exit('!!!Reference dbSNP file should be bgzip compressed!!!')
     
     #MuSE call
     muse_call_output_path = muse_call.call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
