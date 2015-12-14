@@ -5,7 +5,7 @@ import subprocess
 import sys
 import df_util
 import time_util
-from multiprocessing.dummy import Pool
+from multiprocessing.dummy import Pool, Lock
 #from itertools import cycle
 from functools import partial
 
@@ -219,17 +219,18 @@ def remove_dir(adir, engine, logger):
     shutil.rmtree(adir)
     logger.info('removed directory: %s' % adir)
 
-def do_pool_commands(cmd, uuid, engine, logger):
+def do_pool_commands(cmd, uuid, engine, logger, lock = Lock()):
     logger.info('running muse multi chunks call: %s' % cmd)
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output_stdout = output.communicate()[1]
-    logger.info('contents of output=%s' % output_stdout.decode().format())
-    df = time_util.store_time(uuid, cmd, output_stdout, logger)
-    df['cmd'] = cmd
-    unique_key_dict = {'uuid': uuid, 'cmd': cmd}
-    table_name = 'time_mem_MuSE_multi_chunks_call_processes'
-    df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
-    logger.info('completed muse multi chunks call: %s' % str(cmd))
+    with lock:
+        logger.info('contents of output=%s' % output_stdout.decode().format())
+        df = time_util.store_time(uuid, cmd, output_stdout, logger)
+        df['cmd'] = cmd
+        unique_key_dict = {'uuid': uuid, 'cmd': cmd}
+        table_name = 'time_mem_MuSE_multi_chunks_call_processes'
+        df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
+        logger.info('completed muse multi chunks call: %s' % str(cmd))
     return output.wait()
     
 def multi_commands(uuid, cmds, thread_count, engine, logger):
