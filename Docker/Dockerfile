@@ -46,13 +46,11 @@ RUN mkdir ${HOME}/tools
 WORKDIR ${HOME}/tools
 
 RUN wget https://github.com/broadinstitute/picard/releases/download/1.139/picard-tools-1.139.zip \
-    && git clone https://github.com/broadinstitute/picard.git \
     && mv ${HOME}/tools/picard/src ${HOME}/ \
     && unzip picard-tools-1.139.zip \
     && mv picard-tools-1.139 picard-tools \
-    && rm *.zip 
-
-ADD GenomeAnalysisTK.jar ${HOME}/tools/
+    && rm *.zip \
+    && wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa
 
 WORKDIR ${HOME}
 
@@ -64,7 +62,7 @@ USER ubuntu
 RUN pip install --user virtualenvwrapper \
     && /bin/bash -c "source ${HOME}/.local/bin/virtualenvwrapper.sh \
     && mkvirtualenv --python=/usr/bin/python3 p3 \
-    && pip install ipython numpy pandas psycopg2 pysam sqlalchemy biopython \
+    && pip install ipython numpy pandas psycopg2 sqlalchemy \
     && echo source ${HOME}/.local/bin/virtualenvwrapper.sh >> ${HOME}/.bashrc \
     && echo source ${HOME}/.virtualenvs/p3/bin/activate >> ${HOME}/.bashrc"
 
@@ -74,5 +72,5 @@ RUN pip install s3cmd --user
 #USER root
 #RUN chown ubuntu.ubuntu ${HOME}/.ssh/github_rsa && ls -lh ${HOME}/.ssh/github_rsa
 #USER ubuntu
-ENV Broad_cocleaning_pipeline 0.1
-RUN git clone https://github.com/Shenglai/Broad_cocleaning_pipeline.git
+ENV Muse_variant_calling_pipeline 0.1
+RUN git clone https://github.com/Shenglai/muse_variant_calling_pipeline.git
