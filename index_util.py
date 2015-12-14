@@ -51,18 +51,18 @@ def bgzip_compress(uuid, dbsnp_known_snp_sites, engine, logger):
     
 def tabix_index(uuid, dbsnp_known_snp_sites, engine, logger):
     dbsnp_file = os.path.basename(dbsnp_known_snp_sites)
-    dbsnp_tbi_path = dbsnp_bgz_path + '.tbi'
+    dbsnp_tbi_path = dbsnp_known_snp_sites + '.tbi'
     out_dir = os.path.dirname(dbsnp_known_snp_sites)
     if pipe_util.already_step(out_dir, dbsnp_file + '_tbi', logger):
         logger.info('already completed step `tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
     else:
         logger.info('running step `tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
-        cmd = ['tabix', '-p', dbsnp_bgz_path]
+        cmd = ['tabix', '-p', dbsnp_known_snp_sites]
         output = pipe_util.do_command(cmd, logger)
         df = time_util.store_time(uuid, cmd, output, logger)
-        df['dbsnp_bgz_path'] = dbsnp_bgz_path
+        df['dbsnp_known_snp_sites'] = dbsnp_known_snp_sites
         df['dbsnp_tbi_path'] = dbsnp_tbi_path
-        unique_key_dict = {'uuid': uuid, 'dbsnp_bgz_path': dbsnp_bgz_path, 'dbsnp_tbi_path': dbsnp_tbi_path}
+        unique_key_dict = {'uuid': uuid, 'dbsnp_known_snp_sites': dbsnp_known_snp_sites, 'dbsnp_tbi_path': dbsnp_tbi_path}
         table_name = 'time_mem_tabix_index_dbsnp_bgz'
         df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
         pipe_util.create_already_step(out_dir, dbsnp_file + '_tbi', logger)
