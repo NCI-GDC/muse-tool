@@ -45,6 +45,7 @@ RUN mkdir ${HOME}/tools
 WORKDIR ${HOME}/tools
 
 RUN wget https://github.com/broadinstitute/picard/releases/download/1.139/picard-tools-1.139.zip \
+    && git clone https://github.com/broadinstitute/picard.git \
     && mv ${HOME}/tools/picard/src ${HOME}/ \
     && unzip picard-tools-1.139.zip \
     && mv picard-tools-1.139 picard-tools \
