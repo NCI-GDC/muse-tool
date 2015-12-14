@@ -51,6 +51,7 @@ RUN wget https://github.com/broadinstitute/picard/releases/download/1.139/picard
     && mv picard-tools-1.139 picard-tools \
     && rm *.zip \
     && wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa
+    && chmod +x MuSEv1.0rc_submission_c039ffa
 
 WORKDIR ${HOME}
 
