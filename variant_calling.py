@@ -68,7 +68,7 @@ def main():
     parser.add_argument('-g', '--Whole_genome_squencing_data',
                         required = False,
                         action = 'store_true',
-                        help = 'When set, will split WGS data into small blocks',
+                        help = 'Whole genome squencing data',
     )
     parser.add_argument('-bs', '--Parallel_Block_Size',
                         type = is_nat,
@@ -166,7 +166,23 @@ def main():
         else:
             bai_path = index_util.samtools_bam_index(uuid, path, engine, logger)
             logger.info('analysis_ready_bam_bai_path=%s' % bai_path)
-            
+    
+    #bgzip compress and tabix index dbsnp file if needed.
+    dbsnp_name, dbsnp_ext = os.path.splitext(dbsnp_known_snp_sites)
+    dbsnp_tabix_path = dbsnp_known_snp_sites + '.tbi'
+    if dbsnp_ext == '.bgz':
+        logger.info('dbsnp file is already bgzip compressed =%s' % dbsnp_known_snp_sites)
+        if os.path.isfile(dbsnp_tabix_path):
+            logger.info('tabix index of dbsnp_bgz file =%s' % dbsnp_tabix_path)
+        else:
+            dbsnp_tabix_path = index_util.tabix_index(uuid, dbsnp_known_snp_sites, engine, logger)
+            logger.info('tabix index of dbsnp_bgz file =%s' % dbsnp_tabix_path)
+    else:
+        dbsnp_known_snp_sites = index_util.bgzip_compress(uuid, dbsnp_known_snp_sites, engine, logger)
+        logger.info('dbsnp file is already bgzip compressed =%s' % dbsnp_known_snp_sites)
+        dbsnp_tabix_path = index_util.tabix_index(uuid, dbsnp_known_snp_sites, engine, logger)
+        logger.info('tabix index of dbsnp_bgz file =%s' % dbsnp_tabix_path)
+    
     #MuSE call
     muse_call_output_path = muse_call.call(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
 
