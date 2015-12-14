@@ -179,7 +179,6 @@ def main():
             dbsnp_tabix_path = index_util.tabix_index(uuid, dbsnp_known_snp_sites, engine, logger)
             logger.info('tabix index of dbsnp_bgz file =%s' % dbsnp_tabix_path)
     else:
-        warnings.warn("Reference dbSNP file should be bgzip compressed")
         sys.exit('Reference dbSNP file should be bgzip compressed')
     
     #MuSE call
