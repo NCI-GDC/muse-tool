@@ -57,7 +57,7 @@ def tabix_index(uuid, dbsnp_known_snp_sites, engine, logger):
         logger.info('already completed step `tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
     else:
         logger.info('running step `tbi index of dbsnp.vcf` of %s' % dbsnp_known_snp_sites)
-        cmd = ['tabix', '-p', dbsnp_known_snp_sites]
+        cmd = ['tabix', '-p', 'vcf', dbsnp_known_snp_sites]
         output = pipe_util.do_command(cmd, logger)
         df = time_util.store_time(uuid, cmd, output, logger)
         df['dbsnp_known_snp_sites'] = dbsnp_known_snp_sites
