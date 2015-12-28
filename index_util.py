@@ -87,8 +87,6 @@ def samtools_faidx(uuid, reference_fasta_name, engine, logger):
         df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
         pipe_util.create_already_step(out_dir, ref_file + '_faidx', logger)
         logger.info('completed running `samtools faidx` of %s' % reference_fasta_name)
-        lines = open(fai_path).readlines()
-        open(fai_path, 'w').writelines(lines[0:25])
     return fai_path
 
 def picard_CreateSequenceDictionary(uuid, reference_fasta_name, engine, logger):
