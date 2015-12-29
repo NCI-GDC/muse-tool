@@ -141,7 +141,7 @@ def call_list(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_
                                    fai_path = fai_path,
                                    tumor_bam = analysis_ready_tumor_bam_path,
                                    normal_bam = analysis_ready_normal_bam_path,
-                                   output_base = os.path.join(tmpdir, 'output.file')
+                                   output_base = os.path.join(tmpdir, 'output.file'),
                                    thread_count = thread_count)
     ) 
     outputs = pipe_util.multi_commands(uuid, list(a[0] for a in cmds), thread_count, engine, logger)
