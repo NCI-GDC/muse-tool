@@ -97,7 +97,7 @@ def make_fai_list(fai_path, thread_count):
   for i, block in enumerate(fai_regions(fai_path)):
     list_of_regions.append('%s:%s-%s' % (block[0], block[1], block[2]))
   fai_list_path = []
-  for i in range(int(thread_count)):
+  for i in range(thread_count):
     fai_list_path.append(os.path.join(fai_dir, 'ref_list_of_regions_'+str(i)+ '.txt'))
   for item, filename in zip(chunkify(list_of_regions, thread_count), fai_list_path):
     with open(filename, 'w') as output:
@@ -106,7 +106,7 @@ def make_fai_list(fai_path, thread_count):
   
 def muse_call_list_cmd_template(muse, ref, fai_path, tumor_bam, normal_bam, output_base, thread_count):
   template = string.Template("/usr/bin/time -v ${MUSE} call -f ${REF} -l ${REGION} ${TUMOR_BAM} ${NORMAL_BAM} -O ${OUTPUT_BASE}.${REGION_NUM}")
-  for i, block in enumerate(make_fai_list(fai_path, thread_count)):
+  for i, block in enumerate(make_fai_list(fai_path, int(thread_count))):
     cmd = template.substitute(
                               dict(
                                    REF = ref,
