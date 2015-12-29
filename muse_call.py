@@ -111,7 +111,7 @@ def muse_call_list_cmd_template(muse, ref, fai_path, tumor_bam, normal_bam, outp
                               dict(
                                    REF = ref,
                                    REGION = block,
-                                   BLOCK_NUM = i),
+                                   REGION_NUM = i),
                                    MUSE = muse,
                                    TUMOR_BAM = tumor_bam,
                                    NORMAL_BAM = normal_bam,
