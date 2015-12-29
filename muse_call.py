@@ -97,7 +97,7 @@ def make_fai_list(fai_path, thread_count):
   for i, block in enumerate(fai_regions(fai_path)):
     list_of_regions.append('%s:%s-%s' % (block[0], block[1], block[2]))
   fai_list_path = []
-  for i in range(thread_count):
+  for i in range(int(thread_count)):
     fai_list_path.append(os.path.join(fai_dir, 'ref_list_of_regions_'+str(i)+ '.txt'))
   for item, filename in zip(chunkify(list_of_regions, thread_count), fai_list_path):
     with open(filename, 'w') as output:
