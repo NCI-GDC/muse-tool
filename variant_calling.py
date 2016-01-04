@@ -186,7 +186,7 @@ def main():
         #sys.exit('!!!Reference dbSNP file should be bgzip compressed!!!')
     
     #MuSE call
-    muse_call_output_path = muse_call.call_list(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, engine, logger)
+    muse_call_output_path = muse_call.call_region(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
 
     #MuSE sump
     if not args.Whole_genome_squencing_data:
