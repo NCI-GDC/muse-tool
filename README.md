@@ -4,4 +4,5 @@ MuSE is somatic point mutation caller developed by Dr. Wenyi Wang’s group in M
 The MuSE tool : http://bioinformatics.mdanderson.org/main/MuSE
 
 The workflow is shown below
+
 ![Alt text](https://github.com/NCI-GDC/muse-tool/blob/develop/docs/muse_variant_calling_workflow.png "MuSE-workflow")
