@@ -29,4 +29,4 @@ def sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
         df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
         pipe_util.create_already_step(step_dir, sample_base + '_MuSE_sump', logger)
         logger.info('completed running `MuSE sump` of the tumor bam: %s' % input_name)
-  return muse_sump_output_path
+    return muse_sump_output_path
