@@ -94,7 +94,8 @@ def main():
     elif tool_name == 'merge_output':
         tumor_bam_path = pipe_util.get_param(args, 'tumor_bam_path')
         muse_call_output_list = pipe_util.get_param(args, 'muse_call_output_list')
-        merge_output = merge_output(uuid, tumor_bam_path, muse_call_output_list, engine, logger)
+        muse_call_output_path = merge_output(uuid, tumor_bam_path, muse_call_output_list, engine, logger)
+
     elif tool_name == 'muse_sump_wxs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
