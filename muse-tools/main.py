@@ -9,9 +9,9 @@ import sqlalchemy
 from cdis_pipe_utils import pipe_util
 
 import tools.muse_call as muse_call
+import tools.merge_output as merge_output
 import tools.muse_sump_wgs as muse_sump_wgs
 import tools.muse_sump_wxs as muse_sump_wxs
-import tools.verify_util as verify_util
 
 def is_nat(x):
     '''
@@ -91,6 +91,10 @@ def main():
         blocksize = pipe_util.get_param(args, 'blocksize')
         muse_call_output_path = muse_call.call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
 
+    elif tool_name == 'merge_output':
+        tumor_bam_path = pipe_util.get_param(args, 'tumor_bam_path')
+        muse_call_output_list = pipe_util.get_param(args, 'muse_call_output_list')
+        merge_output = merge_output(uuid, tumor_bam_path, muse_call_output_list, engine, logger)
     elif tool_name == 'muse_sump_wxs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
