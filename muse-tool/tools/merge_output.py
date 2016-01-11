@@ -23,4 +23,4 @@ def merge_output(uuid, tumor_bam_path, muse_call_output_list, engine, logger):
                             ohandle.write(line)
                 first = False
         logger.info('completed running step `MuSE merge outputs` of: %s' % uuid)
-  return merge_output
+    return merge_output
