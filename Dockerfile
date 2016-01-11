@@ -10,7 +10,9 @@ ENV HOME /home/ubuntu
 ENV muse-tool 0.4d
 
 RUN mkdir -p ${HOME}/tools/muse-tool
-RUN wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa ${HOME}/tools/
+RUN wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa \
+    && chmod +x MuSEv1.0rc_submission_c039ffa \
+    && mv MuSEv1.0rc_submission_c039ffa ${HOME}/tools/
 ADD muse-tool ${HOME}/tools/muse-tool/
 ADD setup.* ${HOME}/tools/muse-tool/
 
