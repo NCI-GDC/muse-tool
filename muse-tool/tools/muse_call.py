@@ -54,7 +54,7 @@ def muse_call_region_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, nor
     )
     yield cmd, "%s.%s.MuSE.txt" % (output_base, i)
 
-def call_region(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_ready_normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
+def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
   step_dir = os.path.join(os.getcwd(), 'call')
   logger.info('MuSE_call_dir=%s' % step_dir)
   if pipe_util.already_step(step_dir, tumor_bam_name + '_MuSE_call', logger):
@@ -68,8 +68,8 @@ def call_region(uuid, thread_count, analysis_ready_tumor_bam_path, analysis_read
                                    ref = reference_fasta_name,
                                    fai_path = fai_path,
                                    blocksize = blocksize,
-                                   tumor_bam = analysis_ready_tumor_bam_path,
-                                   normal_bam = analysis_ready_normal_bam_path,
+                                   tumor_bam = tumor_bam_path,
+                                   normal_bam = normal_bam_path,
                                    output_base = os.path.join(step_dir, 'output'))
     )
     outputs = multi_commands(uuid, list(a[0] for a in cmds), thread_count, engine, logger)
