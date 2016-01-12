@@ -40,17 +40,21 @@ def main():
                         required = True,
                         help = 'Reference fasta path.',
     )
+    parser.add_argument('-rf', '--reference_fasta_fai',
+                        required = True,
+                        help = 'Reference fasta fai path.',
+    )
     parser.add_argument('-snp','--dbsnp_known_snp_sites',
                         required=True,
                         help='Reference SNP path, that should be bgzip compressed, tabix indexed',
     )
-    parser.add_argument('-tb', '--analysis_ready_tumor_bam_path',
+    parser.add_argument('-tb', '--tumor_bam_path',
                         required = True,
                         nargs = '?',
                         default = [sys.stdin],
                         help = 'Source patient tumor bam path.',
     )
-    parser.add_argument('-nb', '--analysis_ready_normal_bam_path',
+    parser.add_argument('-nb', '--normal_bam_path',
                         required = True,
                         nargs = '?',
                         default = [sys.stdin],
@@ -65,6 +69,11 @@ def main():
                         required = True,
                         help = 'analysis_id string',
     )
+    parser.add_argument('--thread_count',
+                        type = is_nat,
+                        default = 8,
+                        help = 'thread count'
+    )
     parser.add_argument('--tool_name',
                         required = True,
                         help = 'MuSE-pipeline tool'
@@ -74,7 +83,7 @@ def main():
     tool_name = args.tool_name
     uuid = args.uuid
     thread_count = str(args.thread_count)
-    blocksize = str(args.Parallel_Block_Size)
+    Parallel_Block_Size = str(args.Parallel_Block_Size)
 
     logger = pipe_util.setup_logging('muse_' + tool_name, args, uuid)
     engine = pipe_util.setup_db(uuid)
@@ -87,8 +96,8 @@ def main():
         tumor_bam_path = pipe_util.get_param(args, 'tumor_bam_path')
         normal_bam_path = pipe_util.get_param(args, 'normal_bam_path')
         reference_fasta_name = pipe_util.get_param(args, 'reference_fasta_name')
-        fai_path = pipe_util.get_param(args, 'fai_path')
-        blocksize = pipe_util.get_param(args, 'blocksize')
+        fai_path = pipe_util.get_param(args, 'reference_fasta_fai')
+        blocksize = pipe_util.get_param(args, 'Parallel_Block_Size')
         muse_call_output_path = muse_call.call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
 
     elif tool_name == 'merge_output':
