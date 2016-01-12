@@ -9,7 +9,6 @@ def sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
     logger.info('muse_sump_dir=%s' % step_dir)
     input_name = os.path.basename(muse_call_output_path)
     input_base, input_ext = os.path.splitext(input_name)
-    sample_base, sample_ext = os.path.splitext(input_base)
     muse_sump_output = input_base + '.vcf'
     muse_sump_output_path = os.path.join(step_dir, muse_sump_output)
     logger.info('muse_sump_output_path=%s' % muse_sump_output_path)
