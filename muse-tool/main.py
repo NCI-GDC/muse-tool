@@ -9,7 +9,6 @@ from glob import glob
 from cdis_pipe_utils import pipe_util
 
 import tools.muse_call as muse_call
-import tools.merge_output as merge_output
 import tools.muse_sump_wgs as muse_sump_wgs
 import tools.muse_sump_wxs as muse_sump_wxs
 
