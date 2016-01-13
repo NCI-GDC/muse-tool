@@ -66,7 +66,6 @@ def main():
     )
     parser.add_argument('-muse_call_output_list', '--muse_call_output_list',
                         required = False,
-                        type = file,
                         action = 'store',
                         nargs = '+',
                         help = 'muse call output list',
