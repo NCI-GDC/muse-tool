@@ -108,12 +108,12 @@ def main():
     elif tool_name == 'muse_sump_wxs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
-        muse_vcf = muse_sump.sump_wxs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
+        muse_vcf = muse_sump_wxs.sump_wxs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
 
     elif tool_name == 'muse_sump_wgs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
-        muse_vcf = muse_sump.sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
+        muse_vcf = muse_sump_wgs.sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
 
     else:
         sys.exit('No recognized tool was selected')
