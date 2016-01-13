@@ -88,4 +88,4 @@ def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_f
         first = False
     pipe_util.create_already_step(step_dir, uuid + '_MuSE_call', logger)
     logger.info('completed running step `MuSE call by regions` of the tumor bam: %s' % tumor_bam_path)
-    return muse_call_output_path
+  return muse_call_output_path
