@@ -11,7 +11,9 @@ def sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
     input_name = os.path.basename(muse_call_output_path)
     input_base, input_ext = os.path.splitext(input_name)
     muse_sump_output = input_base + '.vcf'
-    muse_sump_output_path = os.path.join(step_dir, muse_sump_output)
+    output_dir = os.getcwd()
+    os.makedirs(output_dir, exist_ok=True)
+    muse_sump_output_path = os.path.join(output_dir, muse_sump_output)
     logger.info('muse_sump_output_path=%s' % muse_sump_output_path)
     if pipe_util.already_step(step_dir, uuid + '_MuSE_sump', logger):
         logger.info('already completed step `MuSE sump` of: %s' % input_name)
