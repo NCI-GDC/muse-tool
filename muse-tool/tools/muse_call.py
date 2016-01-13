@@ -60,7 +60,9 @@ def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_f
   os.makedirs(step_dir, exist_ok=True)
   tumor_bam_name = os.path.basename(tumor_bam_path)
   tb_base, tb_ext = os.path.splitext(tumor_bam_name)
-  muse_call_output_path = os.path.join(step_dir, tb_base) + '.MuSE.txt'
+  merge_dir = os.getcwd()
+  os.makedirs(merge_dir, exist_ok=True)
+  muse_call_output_path = os.path.join(merge_dir, tb_base) + '.MuSE.txt'
   logger.info('MuSE_call_dir=%s' % step_dir)
   if pipe_util.already_step(step_dir, uuid + '_MuSE_call', logger):
     logger.info('already completed step `MuSE call by regions` of: %s' % tumor_bam_path)
