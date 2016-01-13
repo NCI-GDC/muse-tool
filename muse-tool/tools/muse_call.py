@@ -57,10 +57,10 @@ def muse_call_region_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, nor
 def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
   step_dir = os.path.join(os.getcwd(), 'call')
   logger.info('MuSE_call_dir=%s' % step_dir)
-  if pipe_util.already_step(step_dir, tumor_bam_name + '_MuSE_call', logger):
-    logger.info('already completed step `MuSE call by regions` of: %s' % analysis_ready_tumor_bam_path)
+  if pipe_util.already_step(step_dir, uuid + '_MuSE_call', logger):
+    logger.info('already completed step `MuSE call by regions` of: %s' % tumor_bam_path)
   else:
-    logger.info('running step `MuSE call by regions` of the tumor bam: %s' % analysis_ready_tumor_bam_path)
+    logger.info('running step `MuSE call by regions` of the tumor bam: %s' % tumor_bam_path)
     home_dir = os.path.expanduser('~')
     muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
     cmds = list(muse_call_region_cmd_template(
@@ -73,3 +73,5 @@ def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_f
                                    output_base = os.path.join(step_dir, 'output'))
     )
     outputs = multi_commands(uuid, list(a[0] for a in cmds), thread_count, engine, logger)
+    pipe_util.create_already_step(step_dir, uuid + '_MuSE_sump', logger)
+    logger.info('completed running step `MuSE call by regions` of the tumor bam: %s' % tumor_bam_path)
