@@ -5,7 +5,7 @@ from cdis_pipe_utils import pipe_util
 from cdis_pipe_utils import time_util
 
 def merge_output(uuid, tumor_bam_path, muse_call_output_list, engine, logger):
-    step_dir = os.path.getcwd()
+    step_dir = os.path.join(os.getcwd(), 'merge')
     os.makedirs(step_dir, exist_ok=True)
     logger.info('MuSE_merge_dir=%s' % step_dir)
     if pipe_util.already_step(step_dir, uuid + '_MuSE_merge', logger):
@@ -23,5 +23,6 @@ def merge_output(uuid, tumor_bam_path, muse_call_output_list, engine, logger):
                         if first or not line.startswith('#'):
                             ohandle.write(line)
                 first = False
+        pipe_util.create_already_step(step_dir, uuid + '_MuSE_merge', logger)
         logger.info('completed running step `MuSE merge outputs` of: %s' % uuid)
     return merge_output
