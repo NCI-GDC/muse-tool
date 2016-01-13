@@ -57,6 +57,7 @@ def muse_call_region_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, nor
 
 def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
   step_dir = os.path.join(os.getcwd(), 'call')
+  os.makedirs(step_dir, exist_ok=True)
   logger.info('MuSE_call_dir=%s' % step_dir)
   if pipe_util.already_step(step_dir, uuid + '_MuSE_call', logger):
     logger.info('already completed step `MuSE call by regions` of: %s' % tumor_bam_path)

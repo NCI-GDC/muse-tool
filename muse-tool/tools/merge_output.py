@@ -6,6 +6,7 @@ from cdis_pipe_utils import time_util
 
 def merge_output(uuid, tumor_bam_path, muse_call_output_list, engine, logger):
     step_dir = os.path.getcwd()
+    os.makedirs(step_dir, exist_ok=True)
     logger.info('MuSE_merge_dir=%s' % step_dir)
     if pipe_util.already_step(step_dir, uuid + '_MuSE_merge', logger):
         logger.info('already completed step `MuSE merge outputs` of: %s' % uuid)

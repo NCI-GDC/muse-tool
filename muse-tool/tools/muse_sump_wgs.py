@@ -6,6 +6,7 @@ from cdis_pipe_utils import time_util
 
 def sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger):
     step_dir = os.path.join(os.getcwd(), 'sump')
+    os.makedirs(step_dir, exist_ok=True)
     logger.info('muse_sump_dir=%s' % step_dir)
     input_name = os.path.basename(muse_call_output_path)
     input_base, input_ext = os.path.splitext(input_name)
