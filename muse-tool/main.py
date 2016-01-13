@@ -51,11 +51,13 @@ def main():
     parser.add_argument('-tb', '--tumor_bam_path',
                         nargs = '?',
                         default = [sys.stdin],
+                        required = False,
                         help = 'Source patient tumor bam path.',
     )
     parser.add_argument('-nb', '--normal_bam_path',
                         nargs = '?',
                         default = [sys.stdin],
+                        required = False,
                         help = 'Source patient normal bam path.',
     )
     parser.add_argument('-bs', '--Parallel_Block_Size',
