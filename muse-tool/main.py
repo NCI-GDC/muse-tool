@@ -95,7 +95,7 @@ def main():
     thread_count = str(args.thread_count)
     Parallel_Block_Size = str(args.Parallel_Block_Size)
 
-    logger = pipe_util.setup_logging('muse_' + tool_name, args, uuid)
+    logger = pipe_util.setup_logging(tool_name, args, uuid)
     engine = pipe_util.setup_db(uuid)
 
     hostname = os.uname()[1]
