@@ -1,6 +1,7 @@
 import os
 import sys
 import string
+import subprocess
 from itertools import islice
 from functools import partial
 from multiprocessing.dummy import Pool, Lock
