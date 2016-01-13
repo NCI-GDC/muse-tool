@@ -66,8 +66,9 @@ def main():
     )
     parser.add_argument('-muse_call_output_list', '--muse_call_output_list',
                         required = False,
-                        metavar = "path",
-                        type = str,
+                        type = file,
+                        action = 'store',
+                        nargs = '+',
                         help = 'muse call output list',
     )
     parser.add_argument('-muse_call_output_path', '--muse_call_output_path',
@@ -94,7 +95,6 @@ def main():
     uuid = args.uuid
     thread_count = str(args.thread_count)
     Parallel_Block_Size = str(args.Parallel_Block_Size)
-    muse_call_output_list = glob(args.muse_call_output_list)
 
     logger = pipe_util.setup_logging('muse_' + tool_name, args, uuid)
     engine = pipe_util.setup_db(uuid)
@@ -109,10 +109,11 @@ def main():
         reference_fasta_name = pipe_util.get_param(args, 'reference_fasta_name')
         fai_path = pipe_util.get_param(args, 'reference_fasta_fai')
         blocksize = pipe_util.get_param(args, 'Parallel_Block_Size')
-        muse_call_output_path = muse_call.call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
+        muse_call.call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
 
     elif tool_name == 'merge_output':
         tumor_bam_path = pipe_util.get_param(args, 'tumor_bam_path')
+        muse_call_output_list = pipe_util.get_param(args, 'muse_call_output_list')
         muse_call_output_path = merge_output(uuid, tumor_bam_path, muse_call_output_list, engine, logger)
 
     elif tool_name == 'muse_sump_wxs':
