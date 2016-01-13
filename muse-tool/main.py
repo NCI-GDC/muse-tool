@@ -37,12 +37,15 @@ def main():
     # Required flags.
 
     parser.add_argument('-r', '--reference_fasta_name',
+                        required = False,
                         help = 'Reference fasta path.',
     )
     parser.add_argument('-rf', '--reference_fasta_fai',
+                        required = False,
                         help = 'Reference fasta fai path.',
     )
     parser.add_argument('-snp','--dbsnp_known_snp_sites',
+                        required = False,
                         help='Reference SNP path, that should be bgzip compressed, tabix indexed',
     )
     parser.add_argument('-tb', '--tumor_bam_path',
@@ -58,7 +61,12 @@ def main():
     parser.add_argument('-bs', '--Parallel_Block_Size',
                         type = is_nat,
                         default = 50000000,
+                        required = False,
                         help = 'Parallel Block Size',
+    )
+    parser.add_argument('-muse_call_output_list', '--muse_call_output_list',
+                        required = False,
+                        help = 'muse call output list',
     )
     parser.add_argument('-u', '--uuid',
                         required = True,
@@ -67,6 +75,7 @@ def main():
     parser.add_argument('--thread_count',
                         type = is_nat,
                         default = 8,
+                        required = False,
                         help = 'thread count'
     )
     parser.add_argument('--tool_name',
