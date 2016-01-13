@@ -45,7 +45,6 @@ def main():
                         help = 'Reference fasta fai path.',
     )
     parser.add_argument('-snp','--dbsnp_known_snp_sites',
-                        required=True,
                         help='Reference SNP path, that should be bgzip compressed, tabix indexed',
     )
     parser.add_argument('-tb', '--tumor_bam_path',
