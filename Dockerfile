@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --force-yes \
 USER ubuntu
 ENV HOME /home/ubuntu
 
-ENV muse-tool 1.0a
+ENV muse-tool 1.0b
 
 RUN mkdir -p ${HOME}/tools/muse-tool
 RUN wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa \
@@ -19,6 +19,6 @@ ADD setup.* ${HOME}/tools/muse-tool/
 RUN /bin/bash -c "source ${HOME}/.local/bin/virtualenvwrapper.sh \
     && source ~/.virtualenvs/p3/bin/activate \
     && cd ~/tools/muse-tool \
-    && pip install -e ."
+    && pip install -r ./requirements.txt"
 
 WORKDIR ${HOME}

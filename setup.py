@@ -7,13 +7,13 @@ setup(name = 'muse-tool',
       author_email = 'sli6@uchicago.edu',
       version = 0.1,
       description = 'Baylor MuSE tools',
-      url = 'https://github.com/NCI-GDC/cocleaning-tool',
+      url = 'https://github.com/NCI-GDC/muse-tool',
       license = 'Apache 2.0',
       packages = find_packages(),
       install_requires = [
           'pandas',
           'sqlalchemy',
-          'cdis_pipe_utils'
+          'psycopg2'
       ],
       classifiers = [
           'Development Status :: 3 - Alpha',

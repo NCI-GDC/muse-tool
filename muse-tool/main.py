@@ -4,9 +4,8 @@ import argparse
 import logging
 import os
 import sys
-import sqlalchemy
-from glob import glob
 from cdis_pipe_utils import pipe_util
+from cdis_pipe_utils import postgres
 
 import tools.muse_call as muse_call
 import tools.muse_sump_wgs as muse_sump_wgs
@@ -69,10 +68,6 @@ def main():
                         required = False,
                         help = 'muse call output path',
     )
-    parser.add_argument('-u', '--uuid',
-                        required = True,
-                        help = 'analysis_id string',
-    )
     parser.add_argument('--thread_count',
                         type = is_nat,
                         default = 8,
@@ -84,6 +79,18 @@ def main():
                         help = 'MuSE-pipeline tool'
     )
 
+    db = parser.add_argument_group("Database parameters")
+    db.add_argument("--host", default='pgreadwrite.osdc.io', help='hostname for db')
+    db.add_argument("--database", default='prod_bioinfo', help='name of the database')
+    db.add_argument("--username", default=None, help="username for db access", required=True)
+    db.add_argument("--password", default=None, help="password for db access", required=True)
+
+    optional = parser.add_argument_group("optional input parameters")
+    optional.add_argument("--normal_id", default="unknown", help="unique identifier for normal dataset")
+    optional.add_argument("--tumor_id", default="unknown", help="unique identifier for tumor dataset")
+    optional.add_argument("--case_id", default="unknown", help="unique identifier")
+    optional.add_argument("--outdir", default="./", help="path for logs etc.")
+
     args = parser.parse_args()
     tool_name = args.tool_name
     uuid = args.uuid
@@ -91,10 +98,21 @@ def main():
     Parallel_Block_Size = str(args.Parallel_Block_Size)
 
     logger = pipe_util.setup_logging(tool_name, args, uuid)
-    engine = pipe_util.setup_db(uuid)
 
     hostname = os.uname()[1]
     logger.info('hostname=%s' % hostname)
+
+    DATABASE = {
+        'drivername': 'postgres',
+        'host' : args.host,
+        'port' : '5432',
+        'username': args.username,
+        'password' : args.password,
+        'database' : args.database
+    }
+
+
+    engine = postgres.db_connect(DATABASE)
 
     if tool_name == 'muse_call':
         thread_count = pipe_util.get_param(args, 'thread_count')

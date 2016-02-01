@@ -5,27 +5,26 @@ import subprocess
 from itertools import islice
 from functools import partial
 from multiprocessing.dummy import Pool, Lock
-from cdis_pipe_utils import df_util
 from cdis_pipe_utils import pipe_util
 from cdis_pipe_utils import time_util
+from cdis_pipe_utils import postgres
 
-def do_pool_commands(cmd, uuid, engine, logger, lock = Lock()):
+def do_pool_commands(cmd, case_id, engine, logger, files, lock = Lock()):
     logger.info('running muse chunk call: %s' % cmd)
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output_stdout = output.communicate()[1]
     with lock:
         logger.info('contents of output=%s' % output_stdout.decode().format())
-        df = time_util.store_time(uuid, cmd, output_stdout, logger)
-        df['cmd'] = cmd
-        unique_key_dict = {'uuid': uuid, 'cmd': cmd}
-        table_name = 'time_mem_MuSE_chunk_call_processes'
-        df_util.save_df_to_sqlalchemy(df, unique_key_dict, table_name, engine, logger)
+        cmd_list = cmd.split()
+        toolname = ('muse_call: %s' % cmd_list[7])
+        metrics = time_util.parse_time(output_stdout)
+        postgres.add_metrics(engine, toolname, case_id, files, metrics, logger)
         logger.info('completed muse chunk call: %s' % str(cmd))
     return output.wait()
 
-def multi_commands(uuid, cmds, thread_count, engine, logger):
+def multi_commands(case_id, cmds, thread_count, engine, files, logger):
     pool = Pool(int(thread_count))
-    output = pool.map(partial(do_pool_commands, uuid=uuid, engine=engine, logger=logger), cmds)
+    output = pool.map(partial(do_pool_commands, case_id=case_id, engine=engine, logger=logger, files=files), cmds)
     return output
 
 def fai_chunk(fai_path, blocksize):
@@ -55,7 +54,8 @@ def muse_call_region_cmd_template(muse, ref, fai_path, blocksize, tumor_bam, nor
     )
     yield cmd, "%s.%s.MuSE.txt" % (output_base, i)
 
-def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
+def call_region(case_id, tumor_id, normal_id, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger):
+  files = [normal_id, tumor_id]
   step_dir = os.path.join(os.getcwd(), 'call')
   os.makedirs(step_dir, exist_ok=True)
   tumor_bam_name = os.path.basename(tumor_bam_path)
@@ -64,7 +64,7 @@ def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_f
   os.makedirs(merge_dir, exist_ok=True)
   muse_call_output_path = os.path.join(merge_dir, tb_base) + '.MuSE.txt'
   logger.info('MuSE_call_dir=%s' % step_dir)
-  if pipe_util.already_step(step_dir, uuid + '_MuSE_call', logger):
+  if pipe_util.already_step(step_dir, case_id + '_MuSE_call', logger):
     logger.info('already completed step `MuSE call by regions` of: %s' % tumor_bam_path)
   else:
     logger.info('running step `MuSE call by regions` of the tumor bam: %s' % tumor_bam_path)
@@ -79,7 +79,7 @@ def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_f
                                    normal_bam = normal_bam_path,
                                    output_base = os.path.join(step_dir, 'output'))
     )
-    outputs = multi_commands(uuid, list(a[0] for a in cmds), thread_count, engine, logger)
+    outputs = multi_commands(case_id, list(a[0] for a in cmds), thread_count, engine, files, logger)
     first = True
     with open (muse_call_output_path, "w") as ohandle:
       for cmd, out in cmds:
@@ -88,6 +88,6 @@ def call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_f
             if first or not line.startswith('#'):
               ohandle.write(line)
         first = False
-    pipe_util.create_already_step(step_dir, uuid + '_MuSE_call', logger)
+    pipe_util.create_already_step(step_dir, case_id + '_MuSE_call', logger)
     logger.info('completed running step `MuSE call by regions` of the tumor bam: %s' % tumor_bam_path)
   return muse_call_output_path
