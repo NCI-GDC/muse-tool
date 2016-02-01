@@ -94,6 +94,8 @@ def main():
     args = parser.parse_args()
     tool_name = args.tool_name
     case_id = args.case_id
+    tumor_id = args.tumor_id
+    normal_id = args.normal_id
     thread_count = str(args.thread_count)
     Parallel_Block_Size = str(args.Parallel_Block_Size)
 
