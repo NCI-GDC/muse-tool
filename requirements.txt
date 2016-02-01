@@ -1,2 +1,2 @@
--e git+https://git@github.com/LabAdvComp/cdis_pipe_utils.git@22b25932ee853c1aa4581ef235751e7f4c9731e9#egg=cdis_pipe_utils
+-e git+https://git@github.com/LabAdvComp/cdis_pipe_utils.git@71c41457da568c265e62e28058caa9990b13dfe4#egg=cdis_pipe_utils
 -e .
