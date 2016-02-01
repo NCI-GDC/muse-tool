@@ -93,11 +93,11 @@ def main():
 
     args = parser.parse_args()
     tool_name = args.tool_name
-    uuid = args.uuid
+    case_id = args.case_id
     thread_count = str(args.thread_count)
     Parallel_Block_Size = str(args.Parallel_Block_Size)
 
-    logger = pipe_util.setup_logging(tool_name, args, uuid)
+    logger = pipe_util.setup_logging(tool_name, args, case_id)
 
     hostname = os.uname()[1]
     logger.info('hostname=%s' % hostname)
@@ -121,17 +121,17 @@ def main():
         reference_fasta_name = pipe_util.get_param(args, 'reference_fasta_name')
         fai_path = pipe_util.get_param(args, 'reference_fasta_fai')
         blocksize = pipe_util.get_param(args, 'Parallel_Block_Size')
-        muse_call_output_path = muse_call.call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
+        muse_call_output_path = muse_call.call_region(case_id, tumor_id, normal_id, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
 
     elif tool_name == 'muse_sump_wxs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
-        muse_vcf = muse_sump_wxs.sump_wxs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
+        muse_vcf = muse_sump_wxs.sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
 
     elif tool_name == 'muse_sump_wgs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
-        muse_vcf = muse_sump_wgs.sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
+        muse_vcf = muse_sump_wgs.sump_wgs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
 
     else:
         sys.exit('No recognized tool was selected')
