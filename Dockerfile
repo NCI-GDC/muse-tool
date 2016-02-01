@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --force-yes \
 USER ubuntu
 ENV HOME /home/ubuntu
 
-ENV muse-tool 1.0b
+ENV muse-tool 1.0c
 
 RUN mkdir -p ${HOME}/tools/muse-tool
 RUN wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa \
@@ -15,6 +15,7 @@ RUN wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submissio
     && mv MuSEv1.0rc_submission_c039ffa ${HOME}/tools/
 ADD muse-tool ${HOME}/tools/muse-tool/
 ADD setup.* ${HOME}/tools/muse-tool/
+ADD requirements.txt ${HOME}/tools/muse-tool/
 
 RUN /bin/bash -c "source ${HOME}/.local/bin/virtualenvwrapper.sh \
     && source ~/.virtualenvs/p3/bin/activate \
