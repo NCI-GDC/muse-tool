@@ -8,11 +8,7 @@ from multiprocessing.dummy import Pool, Lock
 from cdis_pipe_utils import pipe_util
 from cdis_pipe_utils import time_util
 from cdis_pipe_utils import postgres
-
-
-class MuSE_call(postgres.ToolTypeMixin, postgres.Base, extend_existing=True):
-
-    __tablename__ = 'muse_call_metrics'
+from tools.postgres import MuSE as MuSE
 
 def do_pool_commands(cmd, case_id, engine, logger, files, lock = Lock()):
     logger.info('running muse chunk call: %s' % cmd)
@@ -23,7 +19,7 @@ def do_pool_commands(cmd, case_id, engine, logger, files, lock = Lock()):
         cmd_list = cmd.split()
         toolname = ('muse_call: %s' % cmd_list[7])
         metrics = time_util.parse_time(output_stdout)
-        met = MuSE_call(case_id = case_id,
+        met = MuSE(case_id = case_id,
                     tool = toolname,
                     files=file_ids,
                     systime=metrics['system_time'],

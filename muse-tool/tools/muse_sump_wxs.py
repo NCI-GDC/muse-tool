@@ -3,10 +3,7 @@ import sys
 from cdis_pipe_utils import pipe_util
 from cdis_pipe_utils import time_util
 from cdis_pipe_utils import postgres
-
-class MuSE(postgres.ToolTypeMixin, postgres.Base, extend_existing=True):
-
-    __tablename__ = 'muse_metrics'
+from tools.postgres import MuSE as MuSE
 
 def sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, engine, logger):
     files = [normal_id, tumor_id]
