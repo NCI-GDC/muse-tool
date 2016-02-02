@@ -10,7 +10,7 @@ from cdis_pipe_utils import time_util
 from cdis_pipe_utils import postgres
 
 
-class MuSE_call(postgres.ToolTypeMixin, postgres.Base):
+class MuSE_call(postgres.ToolTypeMixin, postgres.Base, extend_existing=True):
 
     __tablename__ = 'muse_call_metrics'
 

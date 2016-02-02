@@ -4,7 +4,7 @@ from cdis_pipe_utils import pipe_util
 from cdis_pipe_utils import time_util
 from cdis_pipe_utils import postgres
 
-class MuSE(postgres.ToolTypeMixin, postgres.Base):
+class MuSE(postgres.ToolTypeMixin, postgres.Base, extend_existing=True):
 
     __tablename__ = 'muse_metrics'
 
