@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --force-yes \
 USER ubuntu
 ENV HOME /home/ubuntu
 
-ENV muse-tool 1.2d
+ENV muse-tool 1.3a
 
 RUN mkdir -p ${HOME}/tools/muse-tool
 RUN wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa \
