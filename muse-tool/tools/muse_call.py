@@ -21,7 +21,7 @@ def do_pool_commands(cmd, case_id, engine, logger, files, lock = Lock()):
         metrics = time_util.parse_time(output_stdout)
         met = MuSE(case_id = case_id,
                     tool = toolname,
-                    files=file_ids,
+                    files=files,
                     systime=metrics['system_time'],
                     usertime=metrics['user_time'],
                     elapsed=metrics['wall_clock'],

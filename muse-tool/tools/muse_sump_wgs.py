@@ -28,7 +28,7 @@ def sump_wgs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_sn
         metrics = time_util.parse_time(output)
         met = MuSE(case_id = case_id,
                     tool = 'muse_sump_wgs',
-                    files=file_ids,
+                    files=files,
                     systime=metrics['system_time'],
                     usertime=metrics['user_time'],
                     elapsed=metrics['wall_clock'],
