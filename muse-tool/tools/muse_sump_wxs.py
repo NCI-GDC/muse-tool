@@ -4,6 +4,10 @@ from cdis_pipe_utils import pipe_util
 from cdis_pipe_utils import time_util
 from cdis_pipe_utils import postgres
 
+class MuSE(postgres.ToolTypeMixin, postgres.Base):
+
+    __tablename__ = 'muse_metrics'
+
 def sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, engine, logger):
     files = [normal_id, tumor_id]
     step_dir = os.path.join(os.getcwd(), 'sump')
@@ -25,7 +29,17 @@ def sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_sn
         cmd = [muse_path, 'sump', '-I', muse_call_output_path, '-E', '-O', muse_sump_output_path, '-D', dbsnp_known_snp_sites]
         output = pipe_util.do_command(cmd, logger)
         metrics = time_util.parse_time(output)
-        postgres.add_metrics(engine, 'muse_sump_wxs', case_id, files, metrics, logger)
+        met = MuSE(case_id = case_id,
+                    tool = 'muse_sump_wxs',
+                    files=file_ids,
+                    systime=metrics['system_time'],
+                    usertime=metrics['user_time'],
+                    elapsed=metrics['wall_clock'],
+                    cpu=metrics['percent_of_cpu'],
+                    max_resident_time=metrics['maximum_resident_set_size'])
+
+        postgres.create_table(engine, met)
+        postgres.add_metrics(engine, met)
         pipe_util.create_already_step(step_dir, case_id + '_MuSE_sump', logger)
         logger.info('completed running `MuSE sump` of the tumor bam: %s' % input_name)
     return muse_sump_output_path

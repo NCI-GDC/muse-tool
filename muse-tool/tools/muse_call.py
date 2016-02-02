@@ -9,6 +9,10 @@ from cdis_pipe_utils import pipe_util
 from cdis_pipe_utils import time_util
 from cdis_pipe_utils import postgres
 
+class MuSE(postgres.ToolTypeMixin, postgres.Base):
+
+    __tablename__ = 'muse_metrics'
+
 def do_pool_commands(cmd, case_id, engine, logger, files, lock = Lock()):
     logger.info('running muse chunk call: %s' % cmd)
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -18,7 +22,17 @@ def do_pool_commands(cmd, case_id, engine, logger, files, lock = Lock()):
         cmd_list = cmd.split()
         toolname = ('muse_call: %s' % cmd_list[7])
         metrics = time_util.parse_time(output_stdout)
-        postgres.add_metrics(engine, toolname, case_id, files, metrics, logger)
+        met = MuSE(case_id = case_id,
+                    tool = toolname,
+                    files=file_ids,
+                    systime=metrics['system_time'],
+                    usertime=metrics['user_time'],
+                    elapsed=metrics['wall_clock'],
+                    cpu=metrics['percent_of_cpu'],
+                    max_resident_time=metrics['maximum_resident_set_size'])
+
+        postgres.create_table(engine, met)
+        postgres.add_metrics(engine, met)
         logger.info('completed muse chunk call: %s' % str(cmd))
     return output.wait()
 
