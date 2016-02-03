@@ -52,6 +52,10 @@ def main():
                         required = False,
                         help = 'Source patient tumor bam path.',
     )
+    parser.add_argument('-out','--output_vcf',
+                        required = False,
+                        help='Output VCF name',
+    )
     parser.add_argument('-nb', '--normal_bam_path',
                         nargs = '?',
                         default = [sys.stdin],
@@ -128,12 +132,14 @@ def main():
     elif tool_name == 'muse_sump_wxs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
-        muse_vcf = muse_sump_wxs.sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
+        output_vcf = pipe_util.get_param(args, 'output_vcf')
+        muse_vcf = muse_sump_wxs.sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, output_vcf, engine, logger)
 
     elif tool_name == 'muse_sump_wgs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
-        muse_vcf = muse_sump_wgs.sump_wgs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
+        output_vcf = pipe_util.get_param(args, 'output_vcf')
+        muse_vcf = muse_sump_wgs.sump_wgs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, output_vcf, engine, logger)
 
     else:
         sys.exit('No recognized tool was selected')

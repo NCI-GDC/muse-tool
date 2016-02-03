@@ -5,14 +5,12 @@ from cdis_pipe_utils import time_util
 from cdis_pipe_utils import postgres
 from tools.postgres import MuSE as MuSE
 
-def sump_wgs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, engine, logger):
+def sump_wgs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, output_vcf, engine, logger):
     files = [normal_id, tumor_id]
     step_dir = os.path.join(os.getcwd(), 'sump')
     os.makedirs(step_dir, exist_ok=True)
     logger.info('muse_sump_dir=%s' % step_dir)
-    input_name = os.path.basename(muse_call_output_path)
-    input_base, input_ext = os.path.splitext(input_name)
-    muse_sump_output = input_base + '.vcf'
+    muse_sump_output = output_vcf
     output_dir = os.getcwd()
     os.makedirs(output_dir, exist_ok=True)
     muse_sump_output_path = os.path.join(output_dir, muse_sump_output)
