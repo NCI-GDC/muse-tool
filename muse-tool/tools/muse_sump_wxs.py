@@ -16,9 +16,9 @@ def sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_sn
     muse_sump_output_path = os.path.join(output_dir, muse_sump_output)
     logger.info('muse_sump_output_path=%s' % muse_sump_output_path)
     if pipe_util.already_step(step_dir, case_id + '_MuSE_sump', logger):
-        logger.info('already completed step `MuSE sump` of: %s' % input_name)
+        logger.info('already completed step `MuSE sump` of: %s' % muse_call_output_path)
     else:
-        logger.info('running step `MuSE sump` of the tumor bam: %s' % input_name)
+        logger.info('running step `MuSE sump` of the tumor bam: %s' % muse_call_output_path)
         home_dir = os.path.expanduser('~')
         muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
         cmd = [muse_path, 'sump', '-I', muse_call_output_path, '-E', '-O', muse_sump_output, '-D', dbsnp_known_snp_sites]
@@ -36,5 +36,5 @@ def sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_sn
         postgres.create_table(engine, met)
         postgres.add_metrics(engine, met)
         pipe_util.create_already_step(step_dir, case_id + '_MuSE_sump', logger)
-        logger.info('completed running `MuSE sump` of the tumor bam: %s' % input_name)
+        logger.info('completed running `MuSE sump` of the tumor bam: %s' % muse_call_output_path)
     return muse_sump_output_path
