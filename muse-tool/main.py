@@ -86,8 +86,7 @@ def main():
     db = parser.add_argument_group("Database parameters")
     db.add_argument("--host", default='pgreadwrite.osdc.io', help='hostname for db')
     db.add_argument("--database", default='prod_bioinfo', help='name of the database')
-    db.add_argument("--username", default=None, help="username for db access", required=True)
-    db.add_argument("--password", default=None, help="password for db access", required=True)
+    db.add_argument("--postgres_config", default=None, help="postgres config file", required=True)
 
     optional = parser.add_argument_group("optional input parameters")
     optional.add_argument("--normal_id", default="unknown", help="unique identifier for normal dataset")
@@ -108,12 +107,15 @@ def main():
     hostname = os.uname()[1]
     logger.info('hostname=%s' % hostname)
 
+    s = open(args.postgres_config, 'r').read()
+    postgres_config = eval(s)
+
     DATABASE = {
         'drivername': 'postgres',
         'host' : args.host,
         'port' : '5432',
-        'username': args.username,
-        'password' : args.password,
+        'username': postgres_config['username'],
+        'password' : postgres_config['password'],
         'database' : args.database
     }
 
