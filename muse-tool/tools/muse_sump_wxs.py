@@ -21,7 +21,7 @@ def sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_sn
         logger.info('running step `MuSE sump` of the tumor bam: %s' % muse_call_output_path)
         home_dir = os.path.expanduser('~')
         muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
-        cmd = [muse_path, 'sump', '-I', muse_call_output_path, '-E', '-O', muse_sump_output_path, '-D', dbsnp_known_snp_sites]
+        cmd = [muse_path, 'sump', '-I', muse_call_output_path, '-E', '-O', output_vcf, '-D', dbsnp_known_snp_sites]
         output = pipe_util.do_command(cmd, logger)
         metrics = time_util.parse_time(output)
         met = MuSE(case_id = case_id,
