@@ -7,21 +7,17 @@ from tools.postgres import MuSE as MuSE
 
 def sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, output_vcf, engine, logger):
     files = [normal_id, tumor_id]
-    step_dir = os.path.join(os.getcwd(), 'sump')
+    step_dir = os.getcwd()
     os.makedirs(step_dir, exist_ok=True)
-    logger.info('muse_sump_dir=%s' % step_dir)
-    muse_sump_output = output_vcf
-    output_dir = os.getcwd()
-    os.makedirs(output_dir, exist_ok=True)
-    muse_sump_output_path = os.path.join(output_dir, muse_sump_output)
-    logger.info('muse_sump_output_path=%s' % muse_sump_output_path)
+    output_vcf_path = os.path.join(step_dir, output_vcf)
+    logger.info('muse_sump_output_path=%s' % output_vcf_path)
     if pipe_util.already_step(step_dir, case_id + '_MuSE_sump', logger):
         logger.info('already completed step `MuSE sump` of: %s' % muse_call_output_path)
     else:
         logger.info('running step `MuSE sump` of the tumor bam: %s' % muse_call_output_path)
         home_dir = os.path.expanduser('~')
         muse_path = os.path.join(home_dir, 'tools', 'MuSEv1.0rc_submission_c039ffa')
-        cmd = [muse_path, 'sump', '-I', muse_call_output_path, '-E', '-O', output_vcf, '-D', dbsnp_known_snp_sites]
+        cmd = [muse_path, 'sump', '-I', muse_call_output_path, '-E', '-O', output_vcf_path, '-D', dbsnp_known_snp_sites]
         output = pipe_util.do_command(cmd, logger)
         metrics = time_util.parse_time(output)
         met = MuSE(case_id = case_id,
@@ -37,4 +33,4 @@ def sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_sn
         postgres.add_metrics(engine, met)
         pipe_util.create_already_step(step_dir, case_id + '_MuSE_sump', logger)
         logger.info('completed running `MuSE sump` of the tumor bam: %s' % muse_call_output_path)
-    return muse_sump_output_path
+    return output_vcf_path
