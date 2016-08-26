@@ -4,9 +4,8 @@ import argparse
 import logging
 import os
 import sys
-import sqlalchemy
-from glob import glob
 from cdis_pipe_utils import pipe_util
+from cdis_pipe_utils import postgres
 
 import tools.muse_call as muse_call
 import tools.muse_sump_wgs as muse_sump_wgs
@@ -53,6 +52,10 @@ def main():
                         required = False,
                         help = 'Source patient tumor bam path.',
     )
+    parser.add_argument('-out','--output_vcf',
+                        required = False,
+                        help='Output VCF name',
+    )
     parser.add_argument('-nb', '--normal_bam_path',
                         nargs = '?',
                         default = [sys.stdin],
@@ -69,10 +72,6 @@ def main():
                         required = False,
                         help = 'muse call output path',
     )
-    parser.add_argument('-u', '--uuid',
-                        required = True,
-                        help = 'analysis_id string',
-    )
     parser.add_argument('--thread_count',
                         type = is_nat,
                         default = 8,
@@ -84,17 +83,44 @@ def main():
                         help = 'MuSE-pipeline tool'
     )
 
+    db = parser.add_argument_group("Database parameters")
+    db.add_argument("--host", default='172.17.65.79', help='hostname for db')
+    db.add_argument("--database", default='prod_bioinfo', help='name of the database')
+    db.add_argument("--postgres_config", default=None, help="postgres config file", required=True)
+
+    optional = parser.add_argument_group("optional input parameters")
+    optional.add_argument("--normal_id", default="unknown", help="unique identifier for normal dataset")
+    optional.add_argument("--tumor_id", default="unknown", help="unique identifier for tumor dataset")
+    optional.add_argument("--case_id", default="unknown", help="unique identifier")
+    optional.add_argument("--outdir", default="./", help="path for logs etc.")
+
     args = parser.parse_args()
     tool_name = args.tool_name
-    uuid = args.uuid
+    case_id = args.case_id
+    tumor_id = args.tumor_id
+    normal_id = args.normal_id
     thread_count = str(args.thread_count)
     Parallel_Block_Size = str(args.Parallel_Block_Size)
 
-    logger = pipe_util.setup_logging(tool_name, args, uuid)
-    engine = pipe_util.setup_db(uuid)
+    logger = pipe_util.setup_logging(tool_name, args, case_id)
 
     hostname = os.uname()[1]
     logger.info('hostname=%s' % hostname)
+
+    s = open(args.postgres_config, 'r').read()
+    postgres_config = eval(s)
+
+    DATABASE = {
+        'drivername': 'postgres',
+        'host' : args.host,
+        'port' : '5432',
+        'username': postgres_config['username'],
+        'password' : postgres_config['password'],
+        'database' : args.database
+    }
+
+
+    engine = postgres.db_connect(DATABASE)
 
     if tool_name == 'muse_call':
         thread_count = pipe_util.get_param(args, 'thread_count')
@@ -103,17 +129,19 @@ def main():
         reference_fasta_name = pipe_util.get_param(args, 'reference_fasta_name')
         fai_path = pipe_util.get_param(args, 'reference_fasta_fai')
         blocksize = pipe_util.get_param(args, 'Parallel_Block_Size')
-        muse_call_output_path = muse_call.call_region(uuid, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
+        muse_call_output_path = muse_call.call_region(case_id, tumor_id, normal_id, thread_count, tumor_bam_path, normal_bam_path, reference_fasta_name, fai_path, blocksize, engine, logger)
 
     elif tool_name == 'muse_sump_wxs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
-        muse_vcf = muse_sump_wxs.sump_wxs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
+        output_vcf = pipe_util.get_param(args, 'output_vcf')
+        muse_sump_wxs.sump_wxs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, output_vcf, engine, logger)
 
     elif tool_name == 'muse_sump_wgs':
         muse_call_output_path = pipe_util.get_param(args, 'muse_call_output_path')
         dbsnp_known_snp_sites = pipe_util.get_param(args, 'dbsnp_known_snp_sites')
-        muse_vcf = muse_sump_wgs.sump_wgs(uuid, muse_call_output_path, dbsnp_known_snp_sites, engine, logger)
+        output_vcf = pipe_util.get_param(args, 'output_vcf')
+        muse_sump_wgs.sump_wgs(case_id, tumor_id, normal_id, muse_call_output_path, dbsnp_known_snp_sites, output_vcf, engine, logger)
 
     else:
         sys.exit('No recognized tool was selected')
