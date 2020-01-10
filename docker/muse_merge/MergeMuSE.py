@@ -4,6 +4,7 @@ Utility for merging `MuSE call` outputs.
 @author: Shenglai Li
 """
 
+import os
 import sys
 import time
 import argparse
@@ -24,6 +25,7 @@ def main(args, logger):
                     if first or not l.startswith("#"):
                         o.write(l)
             first = False
+    assert os.stat(args.merge_outname).st_size != 0, "Merged VCF is Empty"
 
 
 def get_args():

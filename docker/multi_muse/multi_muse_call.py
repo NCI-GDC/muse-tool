@@ -4,6 +4,7 @@ Multithreading MuSE call
 @author: Shenglai Li
 """
 
+import os
 import sys
 import time
 import logging
@@ -39,8 +40,9 @@ def do_pool_commands(cmd, logger, shell_var=True, lock=Lock()):
             logger.info("MuSE Args: %s", cmd)
             logger.info(output_stdout)
             logger.info(output_stderr)
-    except BaseException:
-        logger.error("command failed %s", cmd)
+    except BaseException as err:
+        logger.error("Command failed %s", cmd)
+        logger.error("Command Error: %s", err)
     return output.wait()
 
 
@@ -129,15 +131,17 @@ def main(args, logger):
     if any(x != 0 for x in outputs):
         logger.error("Failed multi_muse_call")
     else:
-        logger.info("Completed multi_muse_call")
+        merged = "multi_muse_call_merged.MuSE.txt"
         first = True
-        with open("multi_muse_call_merged.MuSE.txt", "w") as oh:
+        with open(merged, "w") as oh:
             for _, out in muse_cmds:
                 with open(out) as fh:
                     for line in fh:
                         if first or not line.startswith("#"):
                             oh.write(line)
                 first = False
+        assert os.stat(merged).st_size != 0, "Merged VCF is Empty"
+        logger.info("Completed multi_muse_call")
 
 
 if __name__ == "__main__":
