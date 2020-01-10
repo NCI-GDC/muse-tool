@@ -3,7 +3,10 @@ LABEL maintainer="sli6@uchicago.edu"
 LABEL version="1.1"
 LABEL description="Utility for merging `MuSE call` outputs."
 
-RUN apt-get update -y && \
-    apt-get install -y python-pip python-dev
+RUN apt-get update -y \
+    && apt-get install -y \
+    python-pip \
+    python-dev \
+    && apt-get clean
 
 ADD MergeMuSE.py /opt/

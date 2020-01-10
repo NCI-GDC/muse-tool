@@ -3,8 +3,11 @@ LABEL maintainer="sli6@uchicago.edu"
 LABEL version="MuSEv1.0rc_submission_c039ffa"
 LABEL description="MuSEv1.0rc_submission_c039ffa docker"
 
-RUN apt-get update -y && \
-    apt-get install -y wget
+RUN apt-get update -y \
+    && apt-get install -y \
+    wget \
+    && apt-get clean
 
-RUN cd /opt/ && wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa && chmod +x MuSEv1.0rc_submission_c039ffa
-
+RUN cd /opt/ \
+    && wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa \
+    && chmod +x MuSEv1.0rc_submission_c039ffa
