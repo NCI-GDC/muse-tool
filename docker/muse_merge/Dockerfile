@@ -5,7 +5,6 @@ LABEL description="Utility for merging `MuSE call` outputs."
 
 RUN apt-get update -y \
     && apt-get install -y \
-    python-pip \
     python-dev \
     && apt-get clean
 
