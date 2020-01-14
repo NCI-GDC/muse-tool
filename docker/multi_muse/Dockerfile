@@ -5,7 +5,6 @@ LABEL description="Multithreading `MuSE call` python wrapper."
 
 RUN apt-get update -y \
     && apt-get install -y \
-    python-pip \
     python-dev \
     wget \
     && apt-get clean
