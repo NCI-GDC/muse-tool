@@ -8,15 +8,16 @@ import os
 import sys
 import time
 import glob
+import shlex
+import ctypes
+import string
 import logging
 import argparse
+import threading
 import subprocess
-import string
+from signal import SIGKILL
 from functools import partial
 from concurrent.futures import ThreadPoolExecutor
-import threading
-from signal import SIGKILL
-import ctypes
 
 
 def setup_logger():
@@ -51,20 +52,25 @@ def subprocess_commands_pipe(cmd, logger, shell_var=False, lock=threading.Lock()
 
     try:
         output = subprocess.Popen(
-            cmd,
+            shlex.split(cmd),
             shell=shell_var,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn=child_preexec_set_pdeathsig(),
         )
-        output_stdout, output_stderr = output.communicate()
+        output.wait()
         with lock:
             logger.info("Running command: %s", cmd)
-            logger.info(output_stdout.decode("UTF-8"))
-            logger.info(output_stderr.decode("UTF-8"))
-    except BaseException:
-        logger.error("command failed %s", cmd)
-
+    except BaseException as e:
+        output.kill()
+        with lock:
+            logger.error("command failed %s", cmd)
+            logger.exception(e)
+    finally:
+        output_stdout, output_stderr = output.communicate()
+        with lock:
+            logger.error(output_stdout.decode("UTF-8"))
+            logger.error(output_stderr.decode("UTF-8"))
 
 def tpe_submit_commands(cmds, thread_count, logger, shell_var=False):
     """run commands on number of threads"""
@@ -119,7 +125,7 @@ def cmd_template(dct):
                 NUM=i
             )
         )
-        yield cmd.split(" ")
+        yield cmd
 
 
 def get_args():
@@ -182,7 +188,7 @@ if __name__ == "__main__":
     start = time.time()
     logger_ = setup_logger()
     logger_.info("-" * 80)
-    logger_.info("multi_muse_call_p3.py")
+    logger_.info("multi_muse_call.py")
     logger_.info("Program Args: %s", " ".join(sys.argv))
     logger_.info("-" * 80)
 
