@@ -7,12 +7,17 @@ Multithreading MuSE call
 import os
 import sys
 import time
+import glob
+import shlex
+import ctypes
+import string
 import logging
 import argparse
+import threading
 import subprocess
-import string
+from signal import SIGKILL
 from functools import partial
-from multiprocessing.dummy import Lock, Pool
+from concurrent.futures import ThreadPoolExecutor
 
 
 def setup_logger():
@@ -29,30 +34,52 @@ def setup_logger():
     return logger
 
 
-def do_pool_commands(cmd, logger, shell_var=True, lock=Lock()):
+def subprocess_commands_pipe(cmd, logger, shell_var=False, lock=threading.Lock()):
     """run pool commands"""
+    libc = ctypes.CDLL("libc.so.6")
+    pr_set_pdeathsig = ctypes.c_int(1)
+
+    def child_preexec_set_pdeathsig():
+        """
+        preexec_fn argument for subprocess.Popen,
+        it will send a SIGKILL to the child once the parent exits
+        """
+
+        def pcallable():
+            return libc.prctl(pr_set_pdeathsig, ctypes.c_ulong(SIGKILL))
+
+        return pcallable
+
     try:
         output = subprocess.Popen(
-            cmd, shell=shell_var, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            shlex.split(cmd),
+            shell=shell_var,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            preexec_fn=child_preexec_set_pdeathsig(),
         )
+        output.wait()
+        with lock:
+            logger.info("Running command: %s", cmd)
+    except BaseException as e:
+        output.kill()
+        with lock:
+            logger.error("command failed %s", cmd)
+            logger.exception(e)
+    finally:
         output_stdout, output_stderr = output.communicate()
         with lock:
-            logger.info("MuSE Args: %s", cmd)
-            logger.info(output_stdout)
-            logger.info(output_stderr)
-    except BaseException as err:
-        logger.error("Command failed %s", cmd)
-        logger.error("Command Error: %s", err)
-    return output.wait()
+            logger.error(output_stdout.decode("UTF-8"))
+            logger.error(output_stderr.decode("UTF-8"))
 
-
-def multi_commands(cmds, thread_count, logger, shell_var=True):
+def tpe_submit_commands(cmds, thread_count, logger, shell_var=False):
     """run commands on number of threads"""
-    pool = Pool(int(thread_count))
-    output = pool.map(
-        partial(do_pool_commands, logger=logger, shell_var=shell_var), cmds
-    )
-    return output
+    with ThreadPoolExecutor(max_workers=thread_count) as e:
+        for cmd in cmds:
+            e.submit(
+                partial(subprocess_commands_pipe, logger=logger, shell_var=shell_var),
+                cmd,
+            )
 
 
 def get_region(intervals):
@@ -67,7 +94,13 @@ def get_region(intervals):
     return interval_list
 
 
-def cmd_template(ref=None, region=None, tumor=None, normal=None):
+def get_file_size(filename):
+    """ Gets file size """
+    fstats = os.stat(filename)
+    return fstats.st_size
+
+
+def cmd_template(dct):
     """cmd template"""
     lst = [
         "/opt/MuSEv1.0rc_submission_c039ffa",
@@ -82,11 +115,17 @@ def cmd_template(ref=None, region=None, tumor=None, normal=None):
         "${NUM}",
     ]
     template = string.Template(" ".join(lst))
-    for i, interval in enumerate(region):
+    for i, interval in enumerate(get_region(dct["interval_bed_path"])):
         cmd = template.substitute(
-            dict(REF=ref, REGION=interval, TUMOR=tumor, NORMAL=normal, NUM=i)
+            dict(
+                REF=dct["reference_path"],
+                REGION=interval,
+                TUMOR=dct["tumor_bam"],
+                NORMAL=dct["normal_bam"],
+                NUM=i
+            )
         )
-        yield cmd, "{}.MuSE.txt".format(i)
+        yield cmd
 
 
 def get_args():
@@ -119,29 +158,29 @@ def get_args():
 def main(args, logger):
     """main"""
     logger.info("Running MuSE...")
-    ref = args.reference_path
-    interval = args.interval_bed_path
-    tumor = args.tumor_bam
-    normal = args.normal_bam
-    threads = args.thread_count
-    muse_cmds = list(
-        cmd_template(ref=ref, region=get_region(interval), tumor=tumor, normal=normal)
-    )
-    outputs = multi_commands([i[0] for i in muse_cmds], threads, logger)
-    if any(x != 0 for x in outputs):
-        logger.error("Failed multi_muse_call")
-    else:
-        merged = "multi_muse_call_merged.MuSE.txt"
-        first = True
-        with open(merged, "w") as oh:
-            for _, out in muse_cmds:
-                with open(out) as fh:
-                    for line in fh:
-                        if first or not line.startswith("#"):
-                            oh.write(line)
-                first = False
-        assert os.stat(merged).st_size != 0, "Merged VCF is Empty"
-        logger.info("Completed multi_muse_call")
+    kwargs = vars(args)
+
+    # Start Queue
+    tpe_submit_commands(list(cmd_template(kwargs)), kwargs["thread_count"], logger)
+
+    # Check outputs
+    outputs = glob.glob("*.MuSE.txt")
+    assert len(outputs) == len(
+        get_region(kwargs["interval_bed_path"])
+    ), "Missing output!"
+    if any(get_file_size(x) == 0 for x in outputs):
+        logger.error("Empty output detected!")
+
+    # Merge
+    merged = "multi_muse_call_merged.MuSE.txt"
+    first = True
+    with open(merged, "w") as oh:
+        for out in outputs:
+            with open(out) as fh:
+                for line in fh:
+                    if first or not line.startswith("#"):
+                        oh.write(line)
+            first = False
 
 
 if __name__ == "__main__":

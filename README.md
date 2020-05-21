@@ -36,10 +36,11 @@ To use docker images directly or with other workflow languages, we recommend to 
 To run multi-threading MuSE call:
 
 ```
-[INFO] [20200109 02:19:20] [multi_muse_call] - --------------------------------------------------------------------------------
-[INFO] [20200109 02:19:20] [multi_muse_call] - multi_muse_call.py
-[INFO] [20200109 02:19:20] [multi_muse_call] - Program Args: docker/multi_muse/multi_muse_call.py -h
-[INFO] [20200109 02:19:20] [multi_muse_call] - --------------------------------------------------------------------------------
+python3.7 multi_muse_call_p3.py
+[INFO] [20200521 16:27:33] [multi_muse_call] - --------------------------------------------------------------------------------
+[INFO] [20200521 16:27:33] [multi_muse_call] - multi_muse_call_p3.py
+[INFO] [20200521 16:27:33] [multi_muse_call] - Program Args: /mnt/SCRATCH/githubs/somatic_variant_tools/muse-tool/docker/multi_muse/multi_muse_call_p3.py
+[INFO] [20200521 16:27:33] [multi_muse_call] - --------------------------------------------------------------------------------
 usage: Internal multithreading MuSE call. [-h] -f REFERENCE_PATH -r
                                           INTERVAL_BED_PATH -t TUMOR_BAM -n
                                           NORMAL_BAM -c THREAD_COUNT
