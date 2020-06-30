@@ -1,0 +1,26 @@
+services:
+- docker
+
+stages:
+- name: publish
+  if: branch = master
+- name: publish-staging
+  if: branch != master
+
+  jobs:
+  include:
+  - stage: publish-staging
+    name: Publish staging image
+    script:
+    - docker login -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD" quay.io
+    - make build
+    - make publish
+  - stage: publish
+    name: Publish production image
+    script:
+    - docker login -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD" quay.io
+    - make build
+    - make publish-release
+
+env:
+  global:
