@@ -16,4 +16,7 @@ RUN cd /opt/ \
     && wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa \
     && chmod +x MuSEv1.0rc_submission_c039ffa
 
-ADD multi_muse_call_p3.py /opt/
+COPY multi_muse_call_p3.py /opt/
+
+ENTRYPOINT ["make"]
+CMD ["run"]
