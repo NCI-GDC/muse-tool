@@ -1,5 +1,5 @@
 VERSION = 1.0
-REPO = muse-merge
+REPO = merge-muse
 
 GIT_SHORT_HASH:=$(shell git rev-parse --short HEAD)
 COMMIT_HASH:=$(shell git rev-parse HEAD)
