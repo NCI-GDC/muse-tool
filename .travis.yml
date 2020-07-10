@@ -1,25 +1,25 @@
 services:
 - docker
 
+install: make-build
+
 stages:
 - name: publish
-  if: branch = master
+  if: branch = master AND type != pull_request
 - name: publish-staging
-  if: branch != master
+  if: branch != master AND type != pull_request
 
-  jobs:
+jobs:
   include:
   - stage: publish-staging
     name: Publish staging image
     script:
     - docker login -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD" quay.io
-    - make build
-    - make publish
-  - stage: publish
+    - make publish-staging
+  - stage: publish-release
     name: Publish production image
     script:
     - docker login -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD" quay.io
-    - make build
     - make publish-release
 
 env:

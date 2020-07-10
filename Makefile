@@ -1,32 +1,60 @@
-.PHONY: help
-help: 
-	@echo build - Create all docker images
-	@echo publish - Push all latest docker images
+VERSION = 1.0
+REPO = muse-tool
+
+GIT_SHORT_HASH:=$(shell git rev-parse --short HEAD)
+COMMIT_HASH:=$(shell git rev-parse HEAD)
+
+DOCKER_URL := quay.io/ncigdc
+DOCKER_IMAGE_COMMIT := ${DOCKER_URL}/${REPO}:${COMMIT_HASH}
+DOCKER_IMAGE_LATEST := ${DOCKER_URL}/${REPO}:latest
+DOCKER_IMAGE_STAGING := ${DOCKER_URL}/${REPO}:staging
+DOCKER_IMAGE := ${DOCKER_URL}/${REPO}:${VERSION}
 
 .PHONY: docker-*
 docker-login:
 	@echo
 	docker login -u="${QUAY_USERNAME}" -p="${QUAY_PASSWORD}" quay.io
 
-.PHONY: build build-*
-build: build-muse build-multi-muse build-muse-merge
+.PHONY: version version-* name
+name:
+	@echo ${NAME}
 
-build-%:
+version:
+	@echo --- VERSION: ${VERSION} ---
+
+version-docker:
+	@echo ${DOCKER_IMAGE_COMMIT}
+	@echo ${DOCKER_IMAGE}
+
+.PHONY: run
+run:
+	@docker run --rm ${DOCKER_IMAGE_LATEST} $@
+
+.PHONY: build build-*
+
+build: build-docker
+
+build-docker:
 	@echo
 	@echo -- Building docker --
-	@make -C $* build-docker NAME=$*
+	docker build . \
+		--file ./Dockerfile.multi \
+		--build-arg NAME=${NAME} \
+		-t "${DOCKER_IMAGE_COMMIT}" \
+		-t "${DOCKER_IMAGE}" \
+		-t "${DOCKER_IMAGE_LATEST}"
 
-.PHONY: publish publish-% publish-release publish-release-%
+.PHONY: publish publish-release
 
-publish: publish-muse publish-multi-muse publish-muse-merge
+publish: docker-login
+	docker push ${DOCKER_IMAGE_COMMIT}
 
-publish-%:
-	@echo
-	@make -C $* publish
+publish-staging: publish
+	docker tag ${DOCKER_IMAGE_LATEST} ${DOCKER_IMAGE_STAGING}
+	docker push ${DOCKER_IMAGE_STAGING}
 
-publish-release:
-
-publish-release-%:
-	@echo
-	@make -C $* publish-release
+publish-release: docker-login
+	docker tag ${DOCKER_IMAGE_LATEST} ${DOCKER_IMAGE}
+	docker push ${DOCKER_IMAGE}
+	docker push ${DOCKER_IMAGE_LATEST}
 
