@@ -1,3 +1,8 @@
+.PHONY: help
+help: 
+	@echo build - Create all docker images
+	@echo publish - Push all latest docker images
+
 .PHONY: docker-*
 docker-login:
 	@echo
@@ -25,6 +30,3 @@ publish-release-%:
 	@echo
 	@make -C $* publish-release
 
-help: 
-	@echo build
-	@echo publish
