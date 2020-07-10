@@ -7,7 +7,7 @@ EOF
 )
 case "$1" in
 	muse) muse "${@:2}";;
-	multi-muse) /bin/multi-muse "${@:2}";;
-	muse-merge) /bin/muse-merge "${@:2}";;
+	multi-muse) /bin/multi_muse.py "${@:2}";;
+	merge-muse) /bin/merge_muse.py "${@:2}";;
 	*help) echo "$USAGE";;
 esac

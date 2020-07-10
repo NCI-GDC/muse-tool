@@ -12,16 +12,15 @@ COPY . /opt
 
 RUN chmod +x /opt/multi-muse/multi_muse.py \
 	&& ln -s /opt/multi-muse/multi_muse.py /bin/multi_muse.py \
-	&& chmod +x /opt/merge-muse/multi_muse.py \
+	&& chmod +x /opt/merge-muse/merge_muse.py \
 	&& ln -s /opt/merge-muse/merge_muse.py /bin/merge_muse.py \
 	&& chmod +x /opt/muse-tool.sh \
 	&& ln -s /opt/muse-tool.sh /bin/muse-tool
 
 # Better getting of this binary needed
-RUN wget -O /opt/ http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa \
-    && chmod +x /opt/MuSEv1.0rc_submission_c039ffa \
-    && ln -s /opt/MuSEv1.0rc_submission_c039ffa /bin/muse
+RUN wget -O /bin/muse http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa \
+    && chmod +x /bin/muse
 
-ENTRYPOINT ['/bin/muse-tool']
+ENTRYPOINT ["/bin/muse-tool"]
 
 CMD ['--help']
