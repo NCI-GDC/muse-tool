@@ -25,3 +25,6 @@ publish-release-%:
 	@echo
 	@make -C $* publish-release
 
+help: 
+	@echo build
+	@echo publish
