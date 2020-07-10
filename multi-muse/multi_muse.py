@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Multithreading MuSE call
 
@@ -103,7 +104,8 @@ def get_file_size(filename):
 def cmd_template(dct):
     """cmd template"""
     lst = [
-        "/opt/MuSEv1.0rc_submission_c039ffa",
+        # "/opt/MuSEv1.0rc_submission_c039ffa",
+        "muse",
         "call",
         "-f",
         "${REF}",
