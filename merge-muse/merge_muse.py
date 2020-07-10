@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Utility for merging `MuSE call` outputs.
 
