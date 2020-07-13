@@ -9,4 +9,4 @@ COPY --from=musetool /bin/muse /bin/muse
 
 COPY . /opt/
 
-ENTRYPOINT ["python", "/opt/multi_muse.py"]
+ENTRYPOINT ["python", "/opt/multi_muse_call.py"]
