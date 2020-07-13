@@ -1,22 +1,12 @@
-FROM ubuntu:18.04
+FROM quay.io/ncigdc/muse-tool:latest AS musetool
 LABEL maintainer="sli6@uchicago.edu"
 LABEL version="1.4"
 LABEL description="Multithreading `MuSE call` python wrapper."
 
-RUN apt update -y \
-    && apt install -y \
-    software-properties-common \
-    wget && apt-get clean
+FROM python:3.7
 
-RUN add-apt-repository ppa:deadsnakes/ppa \
-    && apt update -y \
-    && apt install python3.7 -y
+COPY --from=musetool /bin/muse /bin/muse
 
-RUN cd /opt/ \
-    && wget http://bioinformatics.mdanderson.org/Software/MuSE/MuSEv1.0rc_submission_c039ffa \
-    && chmod +x MuSEv1.0rc_submission_c039ffa
+COPY . /opt/
 
-COPY multi_muse_call_p3.py /opt/
-
-ENTRYPOINT ["make"]
-CMD ["run"]
+ENTRYPOINT ["python", "/opt/multi_muse.py"]
