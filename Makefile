@@ -9,7 +9,7 @@ docker-login:
 	docker login -u="${QUAY_USERNAME}" -p="${QUAY_PASSWORD}" quay.io
 
 .PHONY: build build-*
-build: build-muse build-multi-muse build-muse-merge
+build: build-muse build-multi-muse build-merge-muse
 
 build-%:
 	@echo
