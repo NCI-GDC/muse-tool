@@ -16,15 +16,14 @@ build-%:
 	@echo -- Building docker --
 	@make -C $* build-docker NAME=$*
 
-.PHONY: publish publish-% publish-release publish-release-%
+.PHONY: publish-staging publish-staging-% publish-release publish-release-%
 
-publish: publish-muse publish-multi-muse publish-muse-merge
-
-publish-%:
+publish-staging: publish-staging-muse publish-staging-multi-muse publish-staging-merge-muse
+publish-staging-%:
 	@echo
-	@make -C $* publish
+	@make -C $* publish-staging
 
-publish-release:
+publish-release: publish-release-muse publish-release-multi-muse publish-merge-muse
 
 publish-release-%:
 	@echo
