@@ -1,26 +1,24 @@
 services:
 - docker
-
+install: make build
 stages:
-- name: publish
-  if: branch = master
+- name: publish-release
+  if: branch = master AND type != pull_request
 - name: publish-staging
-  if: branch != master
-
-  jobs:
+  if: branch != master AND type != pull_request
+jobs:
   include:
   - stage: publish-staging
     name: Publish staging image
     script:
     - docker login -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD" quay.io
-    - make build
-    - make publish
-  - stage: publish
+    - make publish-staging
+  - stage: publish-release
     name: Publish production image
     script:
     - docker login -u="$QUAY_USERNAME" -p="$QUAY_PASSWORD" quay.io
-    - make build
     - make publish-release
-
 env:
   global:
+  - secure: ZK2FezjbK37ZxvsO9b5XVgWEULar0HTcR+6+uiHO204X/D1ggmQdNBmwmBc/wuT/SjwSXkFpNCI5kXNrVzQf9KN66dFDp2bDRM5gVuswqA4AiNZqZIsg4Xgb3EQZXG3Q25kgbttOUKLjEPEb2Mj6piAufswQKr7GeIh0/FOrjwsdE8HEvoKoQaAU4rrXx3rteNWQCKDutEFAUkSUlLKx6S82ZykhaVy4/+CYtG1H07ZWI9tArBHcRQjTWZ4jlnyl4Rk0NCab0TgHZ4+8ETL2j5J3nONuAqKvSfwnAxfVVN27a7bEHY/q3apMf1pc6+C4pwTWKWlmp37kRO5PZYOZ07pxKIZGIuDJ18pV+wjU3DOEeZL7z0DAooG7xzJ7wEAJaTQmf3fqAaEQXtB1Tx0Eh5nGMSLnplgTPMf9UP3100t0erOgyqctBc66PiL5RR8KO5J7tl4H3wU9MhGQEc5W5eIBtA3WYZTt6F/ge4836QGoAXknvGuYYGwkDi/m/5OAyoiveQI1GAP3uu6JtCd1qw7F/3CaDI/OQAltEh9V1hi4HOQFz6l8tq/g62s2KDHC/TgDruVkz9O48W5fbX/jFCuZ4yX3m5+H9Lldd7RvBM8e6HVob2wjFYr9xCFnnbH08sCVgy6qluWNTk6GB3N1Qg51k6xipq2glF4+WwyQHlo=
+  - secure: D3JrJeiIhjYjzMaVHAX1cXS5WnF7Lq0onS4d0cJj60pYltlw3kpO2CusDCKhUroOVQCuMUeWfjZKEu/F8IgslzIYAPKLIa7AuG6P6Qs5ebBX/07jTDBh/WcJuCj8ez0OrKnoyc/tz9sZ0GNlfFRkWJN6l/EEgF8P3fR4QNBSVT8kOhL+I0dglFDg6yG6hV3+1lNsRWPzzaap2UKXgd2mAC42pZheZ8Lg7ju8GvmZIEND3qLeaM6YFyQz+UIjbvPPbOmbB67PomLEje2PwGnZjPtQ1jm6/Dz7qQ8IDiGYjfGSHHWhe7t1YieC6IP7jT/8l2L4eSPRti7tlHEF/um4i2udRrhNh6shCNWUKrT1PmHN3GJqHEnoeJbEs03jdSl5HCGeXfy2qG6COwb1mraJxFT9M7fc+kqml+SIMlnch/0akdy+yIqi18DW/DxAO3Eg0IjCZ3+iObnbVpOchRLyoNqJnl/i8uBOWBG5afACSuPp/dja3j87Wf8a9DFbWCmfHRk1jNJ9cOk4ZjK1xl533khzikHNcIBdpSs8AU2I+MZzAe8NXN/oMc3gbqgsYfjC6eXZp3vPKiwerM+01pU+iABieAMzrAkzkhfsUyCMXz+/SBzjABMA7BsfED4eHOiYJjoJPnmHpxn2zry2WM82ge14uBIpMgSBq9AYvY1VSP8=
