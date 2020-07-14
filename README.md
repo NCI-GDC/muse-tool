@@ -1,4 +1,6 @@
 # GDC MuSE
+
+[![Build Status](https://travis-ci.com/NCI-GDC/muse-tool.svg?branch=master)](https://travis-ci.com/NCI-GDC/muse-tool)
 ![Version badge](https://img.shields.io/badge/MuSE-v1.0rc__submission__c039ffa-<COLOR>.svg)
 [![Docker Repository on Quay](https://quay.io/repository/ncigdc/merge-muse/status?token=3ed6d079-bcc4-4d72-9b76-f34a96523997 "Docker Repository on Quay")](https://quay.io/repository/ncigdc/merge-muse)
 [![Docker Repository on Quay](https://quay.io/repository/ncigdc/muse-tool/status?token=64dd5f3f-f095-4af0-b1db-f0e854edae95 "Docker Repository on Quay")](https://quay.io/repository/ncigdc/muse-tool)
