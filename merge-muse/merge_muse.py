@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Utility for merging `MuSE call` outputs.
 
@@ -53,7 +54,7 @@ def setup_logger():
     """
     Sets up the logger.
     """
-    logger = logging.getLogger("MergeMuSE")
+    logger = logging.getLogger("merge_muse.py")
     logger_format = "[%(levelname)s] [%(asctime)s] [%(name)s] - %(message)s"
     logger.setLevel(level=logging.INFO)
     handler = logging.StreamHandler(sys.stderr)
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     start = time.time()
     logger_ = setup_logger()
     logger_.info("-" * 80)
-    logger_.info("MergeMuSE.py")
+    logger_.info("merge_muse.py")
     logger_.info("Program Args: %s", " ".join(sys.argv))
     logger_.info("-" * 80)
 
