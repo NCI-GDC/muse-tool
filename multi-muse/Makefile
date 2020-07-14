@@ -1,5 +1,5 @@
 VERSION = 1.0
-REPO = multi-muse-call
+REPO = multi-muse
 
 GIT_SHORT_HASH:=$(shell git rev-parse --short HEAD)
 COMMIT_HASH:=$(shell git rev-parse HEAD)
@@ -8,13 +8,7 @@ DOCKER_URL := quay.io/ncigdc
 DOCKER_IMAGE_COMMIT := ${DOCKER_URL}/${REPO}:${COMMIT_HASH}
 DOCKER_IMAGE_LATEST := ${DOCKER_URL}/${REPO}:latest
 DOCKER_IMAGE_STAGING := ${DOCKER_URL}/${REPO}:staging
-DOCKER_IMAGE_RELEASE := ${DOCKER_URL}/${REPO}:release
 DOCKER_IMAGE := ${DOCKER_URL}/${REPO}:${VERSION}
-
-.PHONY: docker-*
-docker-login:
-	@echo
-	docker login -u=${QUAY_USERNAME} -p=${QUAY_PASSWORD} quay.io
 
 .PHONY: version version-* name
 name:
@@ -27,18 +21,20 @@ version-docker:
 	@echo ${DOCKER_IMAGE_COMMIT}
 	@echo ${DOCKER_IMAGE}
 
-.PHONY: run docker-run
-run:
-	@python multi_muse_call_p3.py
+.PHONY: docker-*
+docker-login:
+	@echo
+	docker login -u=${QUAY_USERNAME} -p=${QUAY_PASSWORD} quay.io
 
-docker-run:
-	@docker run --rm ${DOCKER_IMAGE_LATEST} run
+.PHONY: run
+run:
+	@docker run --rm ${DOCKER_IMAGE_LATEST}
 
 .PHONY: build build-*
 
 build: build-docker
 
-build-docker: docker-login
+build-docker:
 	@echo
 	@echo -- Building docker --
 	docker build . \
@@ -49,15 +45,14 @@ build-docker: docker-login
 		-t "${DOCKER_IMAGE_LATEST}"
 
 .PHONY: publish publish-release
-
 publish: docker-login
-	docker tag ${DOCKER_IMAGE_LATEST} ${DOCKER_IMAGE_STAGING}
-	docker push ${DOCKER_IMAGE_LATEST}
 	docker push ${DOCKER_IMAGE_COMMIT}
+
+publish-staging: publish
+	docker tag ${DOCKER_IMAGE_LATEST} ${DOCKER_IMAGE_STAGING}
 	docker push ${DOCKER_IMAGE_STAGING}
 
-publish-release: docker-login
-	docker tag ${DOCKER_IMAGE_LATEST} ${DOCKER_IMAGE_RELEASE}
+publish-release: publish
+	docker push ${DOCKER_IMAGE_LATEST}
 	docker push ${DOCKER_IMAGE}
-	docker push ${DOCKER_IMAGE_RELEASE}
 
