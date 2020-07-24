@@ -23,7 +23,7 @@ publish-staging-%:
 	@echo
 	@make -C $* publish-staging
 
-publish-release: publish-release-muse publish-release-multi-muse publish-merge-muse
+publish-release: publish-release-muse publish-release-multi-muse publish-release-merge-muse
 
 publish-release-%:
 	@echo
