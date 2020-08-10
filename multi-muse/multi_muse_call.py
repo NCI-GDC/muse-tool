@@ -1,30 +1,43 @@
+#!/usr/bin/env python3
 """
 Multithreading MuSE call
 
 @author: Shenglai Li
 """
 
-import os
+import pathlib
 import sys
-import time
-import glob
 import shlex
 import ctypes
-import string
 import logging
 import argparse
 import threading
 import subprocess
+from collections import namedtuple
+from typing import Generator, Optional, List
+from textwrap import dedent
 from signal import SIGKILL
 from functools import partial
 from concurrent.futures import ThreadPoolExecutor
+
+logger = logging.getLogger(__name__)
+
+CMD_STR = dedent(
+    """
+    {muse_binary} call
+    -f {reference_path}
+    -r {region}
+    {tumor_bam}
+    {normal_bam}
+    -O {num}
+    """
+).strip()
 
 
 def setup_logger():
     """
     Sets up the logger.
     """
-    logger = logging.getLogger("multi_muse_call")
     logger_format = "[%(levelname)s] [%(asctime)s] [%(name)s] - %(message)s"
     logger.setLevel(level=logging.INFO)
     handler = logging.StreamHandler(sys.stderr)
@@ -34,7 +47,7 @@ def setup_logger():
     return logger
 
 
-def subprocess_commands_pipe(cmd, logger, shell_var=False, lock=threading.Lock()):
+def subprocess_commands_pipe(cmd, lock=threading.Lock()):
     """run pool commands"""
     libc = ctypes.CDLL("libc.so.6")
     pr_set_pdeathsig = ctypes.c_int(1)
@@ -53,7 +66,6 @@ def subprocess_commands_pipe(cmd, logger, shell_var=False, lock=threading.Lock()
     try:
         output = subprocess.Popen(
             shlex.split(cmd),
-            shell=shell_var,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn=child_preexec_set_pdeathsig(),
@@ -72,137 +84,148 @@ def subprocess_commands_pipe(cmd, logger, shell_var=False, lock=threading.Lock()
             logger.info(output_stdout.decode("UTF-8"))
             logger.info(output_stderr.decode("UTF-8"))
 
-def tpe_submit_commands(cmds, thread_count, logger, shell_var=False):
+
+def tpe_submit_commands(cmds, thread_count):
     """run commands on number of threads"""
     with ThreadPoolExecutor(max_workers=thread_count) as e:
         for cmd in cmds:
-            e.submit(
-                partial(subprocess_commands_pipe, logger=logger, shell_var=shell_var),
-                cmd,
-            )
+            e.submit(subprocess_commands_pipe, cmd)
 
 
-def get_region(intervals):
-    """get region from intervals"""
-    interval_list = []
-    with open(intervals, "r") as fh:
-        line = fh.readlines()
-        for bed in line:
-            blocks = bed.rstrip().rsplit("\t")
-            intv = "{}:{}-{}".format(blocks[0], int(blocks[1]) + 1, blocks[2])
-            interval_list.append(intv)
-    return interval_list
+def get_region(intervals_file: str) -> Generator[str, None, None]:
+    """Yield region string from BED file."""
+    with open(intervals_file, "r") as fh:
+        for line in fh:
+            chrom, start, end, *bed = line.strip().split()
+            interval = "{}:{}-{}".format(chrom, int(start) + 1, end)
+            yield interval
 
 
-def get_file_size(filename):
+def get_file_size(filename: pathlib.Path) -> int:
     """ Gets file size """
-    fstats = os.stat(filename)
-    return fstats.st_size
+    return filename.stat().st_size
 
 
-def cmd_template(dct):
-    """cmd template"""
-    lst = [
-        "muse",
-        "call",
-        "-f",
-        "${REF}",
-        "-r",
-        "${REGION}",
-        "${TUMOR}",
-        "${NORMAL}",
-        "-O",
-        "${NUM}",
-    ]
-    template = string.Template(" ".join(lst))
-    for i, interval in enumerate(get_region(dct["interval_bed_path"])):
-        cmd = template.substitute(
-            dict(
-                REF=dct["reference_path"],
-                REGION=interval,
-                TUMOR=dct["tumor_bam"],
-                NORMAL=dct["normal_bam"],
-                NUM=i
-            )
+def format_command(
+    interval_bed_path: str,
+    reference_path: str,
+    tumor_bam: str,
+    normal_bam: str,
+    muse_binary: str = 'muse',
+) -> Generator[str, None, None]:
+    """Yield commands for each BED interval."""
+    for i, interval in enumerate(get_region(interval_bed_path)):
+        cmd = CMD_STR.format(
+            muse_binary=muse_binary,
+            reference_path=reference_path,
+            region=interval,
+            tumor_bam=tumor_bam,
+            normal_bam=normal_bam,
+            number=i,
         )
         yield cmd
 
 
-def get_args():
+def setup_parser() -> argparse.ArgumentParser:
     """
     Loads the parser.
     """
     # Main parser
-    parser = argparse.ArgumentParser(
-        "Internal multithreading MuSE call."
-    )
+    parser = argparse.ArgumentParser("Internal multithreading MuSE call.")
     # Required flags.
-    parser.add_argument(
-        "-f", "--reference_path", required=True, help="Reference path."
-    )
+    parser.add_argument("-f", "--reference_path", required=True, help="Reference path.")
     parser.add_argument(
         "-r", "--interval_bed_path", required=True, help="Interval bed file."
     )
+    parser.add_argument("-t", "--tumor_bam", required=True, help="Tumor bam file.")
+    parser.add_argument("-n", "--normal_bam", required=True, help="Normal bam file.")
     parser.add_argument(
-        "-t", "--tumor_bam", required=True, help="Tumor bam file."
+        "-c", "--thread_count", type=int, required=True, help="Number of threads."
     )
     parser.add_argument(
-        "-n", "--normal_bam", required=True, help="Normal bam file."
+        "--muse-binary", required=False, default="muse", help="Path to MuSE binary",
     )
-    parser.add_argument(
-        "-c", "--thread_count", type=int, required=True, help="Number of thread."
-    )
-    return parser.parse_args()
+    return parser
 
 
-def main(args, logger):
-    """main"""
-    logger.info("Running MuSE...")
-    kwargs = vars(args)
-
-    # Start Queue
-    tpe_submit_commands(list(cmd_template(kwargs)), kwargs["thread_count"], logger)
-
-    # Check outputs
-    outputs = glob.glob("*.MuSE.txt")
-    assert len(outputs) == len(
-        get_region(kwargs["interval_bed_path"])
-    ), "Missing output!"
+def merge_files(outputs: List[pathlib.Path], out_fh):
+    """Write contents of outputs to given file handler."""
+    # Merge
+    first = True
     if any(get_file_size(x) == 0 for x in outputs):
         logger.error("Empty output detected!")
+    for out in outputs:
+        if get_file_size(out) == 0:
+            logger.error("Empty output: %s", out.name)
+        with out.open() as fh:
+            for line in fh:
+                if first or not line.startswith("#"):
+                    out_fh.write(line)
+        first = False
 
-    # Merge
-    merged = "multi_muse_call_merged.MuSE.txt"
-    first = True
-    with open(merged, "w") as oh:
-        for out in outputs:
-            with open(out) as fh:
-                for line in fh:
-                    if first or not line.startswith("#"):
-                        oh.write(line)
-            first = False
+
+def process_argv(argv: Optional[List] = None) -> namedtuple:
+
+    parser = setup_parser()
+
+    if argv:
+        args, unknown_args = parser.parse_known_args(argv)
+    else:
+        args, unknown_args = parser.parse_known_args()
+
+    args_dict = vars(args)
+    args_dict['extras'] = unknown_args
+    run_args = namedtuple('RunArgs', list(args_dict.keys()))
+    return run_args(**args_dict)
+
+
+def run(run_args) -> int:
+
+    run_commands = format_command(
+        run_args.interval_bed_path,
+        run_args.reference_path,
+        run_args.tumor_bam,
+        run_args.normal_bam,
+        run_args.muse_binary,
+    )
+    # Start Queue
+    tpe_submit_commands(
+        run_commands, run_args.thread_count,
+    )
+
+    # Check outputs
+    p = pathlib.Path('.')
+    outputs = list(p.glob("*.MuSE.txt"))
+
+    merged = pathlib.Path("multi_muse_call_merged.MuSE.txt")
+    with merged.open('w') as fh:
+        merge_files(outputs, fh)
+
+    return
+
+
+def main(argv=None) -> int:
+    exit_code = 0
+
+    argv = argv or sys.argv
+    args = process_argv(argv)
+
+    try:
+        run(args)
+    except Exception as e:
+        logger.exception(e)
+        exit_code = 1
+    return exit_code
 
 
 if __name__ == "__main__":
     # CLI Entrypoint.
-    start = time.time()
-    logger_ = setup_logger()
-    logger_.info("-" * 80)
-    logger_.info("multi_muse_call.py")
-    logger_.info("Program Args: %s", " ".join(sys.argv))
-    logger_.info("-" * 80)
+    retcode = 0
 
-    args_ = get_args()
+    try:
+        retcode = main()
+    except Exception as e:
+        retcode = 1
+        logger.exception(e)
 
-    # Process
-    logger_.info(
-        "Processing tumor and normal bam files %s, %s",
-        args_.tumor_bam,
-        args_.normal_bam,
-    )
-    main(args_, logger_)
-
-    # Done
-    logger_.info(
-        "Finished, took %s seconds.", round(time.time() - start, 2)
-    )
+    sys.exit(retcode)
