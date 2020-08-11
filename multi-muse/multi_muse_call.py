@@ -96,7 +96,7 @@ def get_region(intervals_file: str) -> Generator[str, None, None]:
     """Yield region string from BED file."""
     with open(intervals_file, "r") as fh:
         for line in fh:
-            chrom, start, end, *bed = line.strip().split()
+            chrom, start, end, *_ = line.strip().split()
             interval = "{}:{}-{}".format(chrom, int(start) + 1, end)
             yield interval
 
@@ -152,11 +152,10 @@ def merge_files(outputs: List[pathlib.Path], out_fh):
     """Write contents of outputs to given file handler."""
     # Merge
     first = True
-    if any(get_file_size(x) == 0 for x in outputs):
-        logger.error("Empty output detected!")
     for out in outputs:
         if get_file_size(out) == 0:
             logger.error("Empty output: %s", out.name)
+            continue
         with out.open() as fh:
             for line in fh:
                 if first or not line.startswith("#"):
@@ -165,6 +164,7 @@ def merge_files(outputs: List[pathlib.Path], out_fh):
 
 
 def process_argv(argv: Optional[List] = None) -> namedtuple:
+    """Processes argv into namedtuple."""
 
     parser = setup_parser()
 
@@ -179,7 +179,10 @@ def process_argv(argv: Optional[List] = None) -> namedtuple:
     return run_args(**args_dict)
 
 
-def run(run_args) -> int:
+def run(run_args):
+    """Main script logic.
+    Creates muse commands for each BED region and executes in multiple threads.
+    """
 
     run_commands = format_command(
         run_args.interval_bed_path,
@@ -193,7 +196,7 @@ def run(run_args) -> int:
         run_commands, run_args.thread_count,
     )
 
-    # Check outputs
+    # Check and merge outputs
     p = pathlib.Path('.')
     outputs = list(p.glob("*.MuSE.txt"))
 
