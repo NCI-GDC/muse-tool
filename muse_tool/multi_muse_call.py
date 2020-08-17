@@ -5,20 +5,19 @@ Multithreading MuSE call
 @author: Shenglai Li
 """
 
-import pathlib
-import sys
-import shlex
+import argparse
 import ctypes
 import logging
-import argparse
-import threading
+import pathlib
+import shlex
 import subprocess
+import sys
+import threading
 from collections import namedtuple
-from typing import Generator, Optional, List
-from textwrap import dedent
-from signal import SIGKILL
-from functools import partial
 from concurrent.futures import ThreadPoolExecutor
+from signal import SIGKILL
+from textwrap import dedent
+from typing import Generator, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -232,3 +231,6 @@ if __name__ == "__main__":
         logger.exception(e)
 
     sys.exit(retcode)
+
+
+# __END__
