@@ -1,12 +1,24 @@
 FROM quay.io/ncigdc/muse:1.0 AS musetool
-LABEL maintainer="sli6@uchicago.edu"
-LABEL version="1.4"
-LABEL description="Multithreading `MuSE call` python wrapper."
+MAINTAINER Charles Czysz <czysz@uchicago.edu>
 
 FROM python:3.7-slim
 
 COPY --from=musetool /usr/local/bin/muse /usr/local/bin/
 
-COPY . /opt/
+ENV BINARY=muse_tool
 
-ENTRYPOINT ["python3", "/opt/multi_muse_call.py"]
+RUN apt-get update \
+  && apt-get clean autoclean \
+  && apt-get autoremove -y \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY dist/ /opt/
+
+WORKDIR /opt
+
+RUN make init-pip \
+  && ln -s /opt/bin/${BINARY} /bin/${BINARY}
+
+ENTRYPOINT ["/bin/${BINARY}"]
+
+CMD ["--help"]
