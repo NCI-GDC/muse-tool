@@ -204,9 +204,9 @@ class Requirements(Command):
 
 setup(
     name=PACKAGE,
-    description="",  # TODO: Update me
+    description="MuSE utilities.",
     version=__pypi_version__,
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     packages=find_packages(),
     install_requires=INSTALL_REQUIRES,
     tests_require=DEV_REQUIRES,
