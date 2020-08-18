@@ -28,7 +28,7 @@ CMD_STR = dedent(
     -r {region}
     {tumor_bam}
     {normal_bam}
-    -O {num}
+    -O {output_file}
     """
 ).strip()
 
@@ -120,7 +120,7 @@ def format_command(
             region=interval,
             tumor_bam=tumor_bam,
             normal_bam=normal_bam,
-            number=i,
+            output_file=i,
         )
         yield cmd
 
