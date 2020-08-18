@@ -1,7 +1,16 @@
 #!/bin/sh
 
+USAGE=$(cat <<EOF
+muse_tool options:\n
+\tmulti - Run parallelized MuSE tool\n
+\ttest - Run test suite\n
+\tversion - Print version\n
+\thelp - Print this message
+EOF
+)
 case "$1" in
 	test) python -m pytest tests;;
 	*version) python -m muse_tool --version;;
-	*) python -m muse_tool $@;;
+	multi) python -m muse_tool.multi_muse $@;;
+	*) echo $USAGE;;
 esac
