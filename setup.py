@@ -10,7 +10,9 @@ from setuptools import Command, find_packages, setup
 
 PACKAGE = "muse_tool"
 
-INSTALL_REQUIRES = []
+INSTALL_REQUIRES = [
+    "click",
+]
 
 DEV_REQUIRES = [
     'detect-secrets==0.13.1',
@@ -214,6 +216,12 @@ setup(
         "capture_requirements": Requirements,
         "capture_version": CaptureVersion,
         "print_version": PrintVersion,
+    },
+    entry_points={
+        "console_scripts": [
+            # "merge = muse_tool.merge_muse:main",
+            "multi_muse = muse_tool.multi_muse:main",
+        ]
     },
     scripts=[os.path.join(os.path.dirname(__file__), 'bin', PACKAGE)],
 )
