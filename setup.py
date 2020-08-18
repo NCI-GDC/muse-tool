@@ -10,9 +10,7 @@ from setuptools import Command, find_packages, setup
 
 PACKAGE = "muse_tool"
 
-INSTALL_REQUIRES = [
-    "click",
-]
+INSTALL_REQUIRES = []
 
 DEV_REQUIRES = [
     'detect-secrets==0.13.1',
