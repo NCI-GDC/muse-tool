@@ -17,9 +17,14 @@ from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor
 from signal import SIGKILL
 from textwrap import dedent
-from typing import Generator, List, Optional
+from types import SimpleNamespace
+from typing import IO, Generator, List, Optional
 
 logger = logging.getLogger(__name__)
+
+DI = SimpleNamespace(
+    pathlib=pathlib, shlex=shlex, subprocess=subprocess, threading=threading,
+)
 
 CMD_STR = dedent(
     """
@@ -43,42 +48,44 @@ def setup_logger():
     formatter = logging.Formatter(logger_format, datefmt="%Y%m%d %H:%M:%S")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    return logger
 
 
-def subprocess_commands_pipe(cmd, lock=threading.Lock()):
-    """run pool commands"""
+def child_preexec_set_pdeathsig():
+    """
+    preexec_fn argument for subprocess.Popen,
+    it will send a SIGKILL to the child once the parent exits
+    """
+
     libc = ctypes.CDLL("libc.so.6")
     pr_set_pdeathsig = ctypes.c_int(1)
 
-    def child_preexec_set_pdeathsig():
-        """
-        preexec_fn argument for subprocess.Popen,
-        it will send a SIGKILL to the child once the parent exits
-        """
+    def pcallable():
+        return libc.prctl(pr_set_pdeathsig, ctypes.c_ulong(SIGKILL))
 
-        def pcallable():
-            return libc.prctl(pr_set_pdeathsig, ctypes.c_ulong(SIGKILL))
+    return pcallable
 
-        return pcallable
 
+def subprocess_commands_pipe(cmd, pre_exec_fn=child_preexec_set_pdeathsig, di=DI):
+    """run pool commands"""
+    lock = di.threading.Lock()
+
+    output = di.subprocess.Popen(
+        shlex.split(cmd),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        preexec_fn=pre_exec_fn(),
+    )
     try:
-        output = subprocess.Popen(
-            shlex.split(cmd),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            preexec_fn=child_preexec_set_pdeathsig(),
-        )
-        output.wait()
         with lock:
             logger.info("Running command: %s", cmd)
-    except BaseException as e:
+        output_stdout, output_stderr = output.communicate()
+    except Exception as e:
         output.kill()
+        output_stdout, output_stderr = output.communicate()
         with lock:
             logger.error("command failed %s", cmd)
             logger.exception(e)
     finally:
-        output_stdout, output_stderr = output.communicate()
         with lock:
             logger.info(output_stdout.decode("UTF-8"))
             logger.info(output_stderr.decode("UTF-8"))
@@ -147,15 +154,15 @@ def setup_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def merge_files(outputs: List[pathlib.Path], out_fh):
+def merge_files(muse_outputs: List[pathlib.Path], out_fh: IO):
     """Write contents of outputs to given file handler."""
     # Merge
     first = True
-    for out in outputs:
-        if get_file_size(out) == 0:
-            logger.error("Empty output: %s", out.name)
+    for file in muse_outputs:
+        if get_file_size(file) == 0:
+            logger.error("Empty output: %s", file.name)
             continue
-        with out.open() as fh:
+        with file.open() as fh:
             for line in fh:
                 if first or not line.startswith("#"):
                     out_fh.write(line)
@@ -211,6 +218,7 @@ def main(argv=None) -> int:
 
     argv = argv or sys.argv
     args = process_argv(argv)
+    setup_logger()
 
     try:
         run(args)
