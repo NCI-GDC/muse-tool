@@ -21,6 +21,7 @@ WORKDIR /opt
 RUN make init-pip \
   && ln -s /opt/bin/${BINARY} /bin/${BINARY}
 
-ENTRYPOINT ["/bin/muse_tool"]
-
-CMD ["--help"]
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+ENTRYPOINT ["/tini", "--"]
