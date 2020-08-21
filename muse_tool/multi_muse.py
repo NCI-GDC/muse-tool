@@ -6,24 +6,21 @@ Multithreading MuSE call
 """
 
 import argparse
-import ctypes
+import concurrent.futures
 import logging
 import pathlib
 import shlex
 import subprocess
 import sys
-import threading
 from collections import namedtuple
-from concurrent.futures import ThreadPoolExecutor
-from signal import SIGKILL
 from textwrap import dedent
 from types import SimpleNamespace
-from typing import IO, Generator, List, Optional
+from typing import IO, Any, Callable, Generator, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 DI = SimpleNamespace(
-    pathlib=pathlib, shlex=shlex, subprocess=subprocess, threading=threading,
+    futures=concurrent.futures, pathlib=pathlib, shlex=shlex, subprocess=subprocess
 )
 
 CMD_STR = dedent(
@@ -50,52 +47,56 @@ def setup_logger():
     logger.addHandler(handler)
 
 
-def child_preexec_set_pdeathsig():
+def subprocess_commands_pipe(cmd, timeout: int = 3600, di=DI) -> Tuple[str, str]:
+    """Run given command with subprocess.
+    Accepts:
+        cmd (str): Command string
+        timeout (int=3600): Max time for command to run, in seconds
+    Returns:
+        Tuple of decoded stdout and stderr
+    Raises:
+        ValueError: timeout exceeded or other exception
     """
-    preexec_fn argument for subprocess.Popen,
-    it will send a SIGKILL to the child once the parent exits
-    """
-
-    libc = ctypes.CDLL("libc.so.6")
-    pr_set_pdeathsig = ctypes.c_int(1)
-
-    def pcallable():
-        return libc.prctl(pr_set_pdeathsig, ctypes.c_ulong(SIGKILL))
-
-    return pcallable
-
-
-def subprocess_commands_pipe(cmd, pre_exec_fn=child_preexec_set_pdeathsig, di=DI):
     """run pool commands"""
-    lock = di.threading.Lock()
 
     output = di.subprocess.Popen(
-        shlex.split(cmd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        preexec_fn=pre_exec_fn(),
+        shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
     try:
-        with lock:
-            logger.info("Running command: %s", cmd)
-        output_stdout, output_stderr = output.communicate()
-    except Exception as e:
+        # Use only Popen.communicate with PIPE, not wait
+        output_stdout, output_stderr = output.communicate(timeout=timeout)
+    except Exception:
         output.kill()
-        output_stdout, output_stderr = output.communicate()
-        with lock:
-            logger.error("command failed %s", cmd)
-            logger.exception(e)
-    finally:
-        with lock:
-            logger.info(output_stdout.decode("UTF-8"))
-            logger.info(output_stderr.decode("UTF-8"))
+        _, output_stderr = output.communicate()
+        raise ValueError(output_stderr.decode())
+    return output_stdout.decode(), output_stderr.decode()
 
 
-def tpe_submit_commands(cmds, thread_count):
-    """run commands on number of threads"""
-    with ThreadPoolExecutor(max_workers=thread_count) as e:
-        for cmd in cmds:
-            e.submit(subprocess_commands_pipe, cmd)
+def tpe_submit_commands(
+    cmds: List[Any], thread_count: int, fn: Callable = subprocess_commands_pipe, di=DI,
+):
+    """Run commands on multiple threads.
+
+    Stdout and stderr are logged on function success.
+    Exception logged on function failure.
+    Accepts:
+        cmds (List[str]): List of inputs to pass to each thread.
+        thread_count (int): Threads to run
+        fn (Callable): Function to run using threads, must accept each element of cmds
+    Returns:
+        None
+    Raises:
+        None
+    """
+    with di.futures.ThreadPoolExecutor(max_workers=thread_count) as executor:
+        futures = [executor.submit(fn, cmd) for cmd in cmds]
+        for future in di.futures.as_completed(futures):
+            try:
+                stdout, stderr = future.result()
+                logger.info(stdout.decode())
+                logger.info(stderr.decode())
+            except Exception as e:
+                logger.exception(e)
 
 
 def get_region(intervals_file: str) -> Generator[str, None, None]:
@@ -190,12 +191,14 @@ def run(run_args):
     Creates muse commands for each BED region and executes in multiple threads.
     """
 
-    run_commands = format_command(
-        run_args.interval_bed_path,
-        run_args.reference_path,
-        run_args.tumor_bam,
-        run_args.normal_bam,
-        run_args.muse_binary,
+    run_commands = list(
+        format_command(
+            run_args.interval_bed_path,
+            run_args.reference_path,
+            run_args.tumor_bam,
+            run_args.normal_bam,
+            run_args.muse_binary,
+        )
     )
     # Start Queue
     tpe_submit_commands(
