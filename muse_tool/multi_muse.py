@@ -15,13 +15,19 @@ import sys
 from collections import namedtuple
 from textwrap import dedent
 from types import SimpleNamespace
-from typing import IO, Any, Callable, Generator, List, Optional, Tuple
+from typing import IO, Any, Callable, Generator, List, NamedTuple, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 DI = SimpleNamespace(
     futures=concurrent.futures, pathlib=pathlib, shlex=shlex, subprocess=subprocess
 )
+
+
+class PopenReturnNT(NamedTuple):
+    stderr: str
+    stdout: str
+
 
 CMD_STR = dedent(
     """
@@ -47,7 +53,7 @@ def setup_logger():
     logger.addHandler(handler)
 
 
-def subprocess_commands_pipe(cmd, timeout: int = 3600, di=DI) -> Tuple[str, str]:
+def subprocess_commands_pipe(cmd, timeout: int = 3600, di=DI) -> PopenReturnNT:
     """Run given command with subprocess.
     Accepts:
         cmd (str): Command string
@@ -69,7 +75,7 @@ def subprocess_commands_pipe(cmd, timeout: int = 3600, di=DI) -> Tuple[str, str]
         output.kill()
         _, output_stderr = output.communicate()
         raise ValueError(output_stderr.decode())
-    return output_stdout.decode(), output_stderr.decode()
+    return PopenReturnNT(stdout=output_stdout.decode(), stderr=output_stderr.decode(),)
 
 
 def tpe_submit_commands(
@@ -92,9 +98,9 @@ def tpe_submit_commands(
         futures = [executor.submit(fn, cmd) for cmd in cmds]
         for future in di.futures.as_completed(futures):
             try:
-                stdout, stderr = future.result()
-                logger.info(stdout.decode())
-                logger.info(stderr.decode())
+                result = future.result()
+                logger.info(result.stdout.decode())
+                logger.info(result.stderr.decode())
             except Exception as e:
                 logger.exception(e)
 
@@ -209,8 +215,8 @@ def run(run_args):
     p = pathlib.Path('.')
     outputs = list(p.glob("*.MuSE.txt"))
 
-    merged = pathlib.Path("multi_muse_call_merged.MuSE.txt")
-    with merged.open('w') as fh:
+    merged_output_path = "multi_muse_call_merged.MuSE.txt"
+    with open(merged_output_path, 'w') as fh:
         merge_files(outputs, fh)
 
     return
