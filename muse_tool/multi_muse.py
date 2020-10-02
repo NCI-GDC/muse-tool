@@ -105,7 +105,7 @@ def tpe_submit_commands(
                 logger.exception(e)
 
 
-def get_region(intervals_file: str) -> Generator[str, None, None]:
+def yield_bed_regions(intervals_file: str) -> Generator[str, None, None]:
     """Yield region string from BED file."""
     with open(intervals_file, "r") as fh:
         for line in fh:
