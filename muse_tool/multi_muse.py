@@ -127,7 +127,7 @@ def format_command(
     muse_binary: str = 'muse',
 ) -> Generator[str, None, None]:
     """Yield commands for each BED interval."""
-    for i, interval in enumerate(get_region(interval_bed_path)):
+    for i, interval in enumerate(yield_bed_regions(interval_bed_path)):
         cmd = CMD_STR.format(
             muse_binary=muse_binary,
             reference_path=reference_path,
