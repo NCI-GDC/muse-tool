@@ -5,11 +5,11 @@ Utility for merging `MuSE call` outputs.
 @author: Shenglai Li
 """
 
+import argparse
+import logging
 import os
 import sys
 import time
-import argparse
-import logging
 
 
 def main(args, logger):
@@ -22,9 +22,9 @@ def main(args, logger):
     with open(args.merge_outname, "w") as o:
         for m in args.muse_call_out:
             with open(m) as f:
-                for l in f:
-                    if first or not l.startswith("#"):
-                        o.write(l)
+                for line in f:
+                    if first or not line.startswith("#"):
+                        o.write(line)
             first = False
     assert os.stat(args.merge_outname).st_size != 0, "Merged VCF is Empty"
 
@@ -38,15 +38,9 @@ def get_args():
         description="Utility for merging `MuSE call` outputs."
     )
     # Args
-    required = parser.add_argument_group(
-        "Required input parameters"
-    )
-    required.add_argument(
-        "--muse_call_out", action="append", required=True
-    )
-    required.add_argument(
-        "--merge_outname", required=True
-    )
+    required = parser.add_argument_group("Required input parameters")
+    required.add_argument("--muse_call_out", action="append", required=True)
+    required.add_argument("--merge_outname", required=True)
     return parser.parse_args()
 
 
