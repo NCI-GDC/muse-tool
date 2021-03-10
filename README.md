@@ -12,17 +12,6 @@ MuSE is somatic point mutation caller developed by Dr. Wenyi Wang’s group in M
 
 Original MuSE: http://bioinformatics.mdanderson.org/main/MuSE
 
-## Docker
-
-There are three `Dockerfile`s for different purposes:
-
-* Vanilla MuSE
-  * `/docker/muse/Dockerfile` : MuSE docker without additional features.
-* MuSE call merge
-  * `/docker/muse_merge/Dockerfile` : A simple python code that can merge MuSE call outputs. It can be considered as `gather` part when applying `scatter/gather` on MuSE.
-* Multi-threading MuSE call
-  * `/docker/multi_muse/Dockerfile` : A python multi-threading implementation on MuSE call function. Achieve `scatter/gather` method on Docker level.
-
 ## How to build
 
 https://docs.docker.com/engine/reference/builder/
@@ -38,19 +27,22 @@ The repository has only been tested on GDC data and in the particular environmen
 
 There is a production-ready CWL example at https://github.com/NCI-GDC/muse-cwl which uses the docker images that are built from the `Dockerfile`s in this repo.
 
-To use docker images directly or with other workflow languages, we recommend to build and use either vanilla MuSE or multi-threading MuSE call.
+To use docker images directly or with other workflow languages, we recommend to build and use either MuSE or multi-threading MuSE call.
 
 To run multi-threading MuSE call:
 
 ```
-python3.7 multi_muse_call_p3.py
-[INFO] [20200521 16:27:33] [multi_muse_call] - --------------------------------------------------------------------------------
-[INFO] [20200521 16:27:33] [multi_muse_call] - multi_muse_call_p3.py
-[INFO] [20200521 16:27:33] [multi_muse_call] - Program Args: /mnt/SCRATCH/githubs/somatic_variant_tools/muse-tool/docker/multi_muse/multi_muse_call_p3.py
-[INFO] [20200521 16:27:33] [multi_muse_call] - --------------------------------------------------------------------------------
+docker run -it {YOUR DOCKER} muse_tool multi
+```
+or
+```
+python3.7 multi_muse.py
+```
+```
 usage: Internal multithreading MuSE call. [-h] -f REFERENCE_PATH -r
                                           INTERVAL_BED_PATH -t TUMOR_BAM -n
                                           NORMAL_BAM -c THREAD_COUNT
+                                          [--muse-binary MUSE_BINARY]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -63,7 +55,9 @@ optional arguments:
   -n NORMAL_BAM, --normal_bam NORMAL_BAM
                         Normal bam file.
   -c THREAD_COUNT, --thread_count THREAD_COUNT
-                        Number of thread.
+                        Number of threads.
+  --muse-binary MUSE_BINARY
+                        Path to MuSE binary
 ```
 
 ## For GDC users
