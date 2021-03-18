@@ -14,6 +14,7 @@ import subprocess
 import sys
 from collections import namedtuple
 from textwrap import dedent
+from threading import TIMEOUT_MAX
 from types import SimpleNamespace
 from typing import IO, Any, Callable, Generator, List, NamedTuple, Optional, Tuple
 
@@ -25,7 +26,8 @@ DI = SimpleNamespace(
     futures=concurrent.futures, pathlib=pathlib, shlex=shlex, subprocess=subprocess
 )
 
-
+TIMEOUT = 2147483
+# TIMEOUT = int(TIMEOUT_MAX / 4295)
 class PopenReturnNT(NamedTuple):
     stderr: str
     stdout: str
@@ -55,11 +57,11 @@ def setup_logger():
     logger.addHandler(handler)
 
 
-def subprocess_commands_pipe(cmd, timeout: int = 3600, di=DI) -> PopenReturnNT:
+def subprocess_commands_pipe(cmd, timeout: int, di=DI) -> PopenReturnNT:
     """Run given command with subprocess.
     Accepts:
         cmd (str): Command string
-        timeout (int=3600): Max time for command to run, in seconds
+        timeout (int): Max time for command to run, in seconds
     Returns:
         Tuple of decoded stdout and stderr
     Raises:
@@ -84,7 +86,11 @@ def subprocess_commands_pipe(cmd, timeout: int = 3600, di=DI) -> PopenReturnNT:
 
 
 def tpe_submit_commands(
-    cmds: List[Any], thread_count: int, fn: Callable = subprocess_commands_pipe, di=DI,
+    cmds: List[Any],
+    thread_count: int,
+    timeout: int,
+    fn: Callable = subprocess_commands_pipe,
+    di=DI,
 ) -> list:
     """Run commands on multiple threads.
 
@@ -94,6 +100,7 @@ def tpe_submit_commands(
         cmds (List[str]): List of inputs to pass to each thread.
         thread_count (int): Threads to run
         fn (Callable): Function to run using threads, must accept each element of cmds
+        timeout: Max time to run in seconds.
     Returns:
         list of commands which raised exceptions
     Raises:
@@ -101,7 +108,7 @@ def tpe_submit_commands(
     """
     exceptions = []
     with di.futures.ThreadPoolExecutor(max_workers=thread_count) as executor:
-        futures = {executor.submit(fn, cmd): cmd for cmd in cmds}
+        futures = {executor.submit(fn, cmd, timeout): cmd for cmd in cmds}
         for future in di.futures.as_completed(futures):
             cmd = futures[future]
             try:
@@ -169,6 +176,13 @@ def setup_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--muse-binary", required=False, default="muse", help="Path to MuSE binary",
     )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=TIMEOUT,
+        required=False,
+        help="Max time for command to run, in seconds.",
+    )
     return parser
 
 
@@ -218,7 +232,9 @@ def run(run_args):
         )
     )
     # Start Queue
-    exceptions = tpe_submit_commands(run_commands, run_args.thread_count)
+    exceptions = tpe_submit_commands(
+        run_commands, run_args.thread_count, run_args.timeout
+    )
     if exceptions:
         for e in exceptions:
             logger.error(e)
@@ -245,7 +261,6 @@ def main(argv=None) -> int:
     argv = argv or sys.argv
     args = process_argv(argv)
     setup_logger()
-
     try:
         run(args)
     except Exception as e:
