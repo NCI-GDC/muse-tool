@@ -14,7 +14,6 @@ import subprocess
 import sys
 from collections import namedtuple
 from textwrap import dedent
-from threading import TIMEOUT_MAX
 from types import SimpleNamespace
 from typing import IO, Any, Callable, Generator, List, NamedTuple, Optional, Tuple
 
@@ -26,8 +25,7 @@ DI = SimpleNamespace(
     futures=concurrent.futures, pathlib=pathlib, shlex=shlex, subprocess=subprocess
 )
 
-TIMEOUT = 2147483
-# TIMEOUT = int(TIMEOUT_MAX / 4295)
+
 class PopenReturnNT(NamedTuple):
     stderr: str
     stdout: str
@@ -179,7 +177,7 @@ def setup_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--timeout",
         type=int,
-        default=TIMEOUT,
+        default=None,
         required=False,
         help="Max time for command to run, in seconds.",
     )
