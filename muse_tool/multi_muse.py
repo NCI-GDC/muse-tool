@@ -4,7 +4,6 @@ Multithreading MuSE call
 
 @author: Shenglai Li
 """
-
 import argparse
 import concurrent.futures
 import logging
@@ -12,6 +11,7 @@ import pathlib
 import shlex
 import subprocess
 import sys
+import time
 from collections import namedtuple
 from textwrap import dedent
 from types import SimpleNamespace
@@ -47,10 +47,10 @@ def setup_logger():
     """
     Sets up the logger.
     """
-    logger_format = "[%(levelname)s] [%(asctime)s] [%(name)s] - %(message)s"
+    loggerformat = "[%(levelname)s] [%(asctime)s] [%(name)s] - %(message)s"
     logger.setLevel(level=logging.INFO)
     handler = logging.StreamHandler(sys.stderr)
-    formatter = logging.Formatter(logger_format, datefmt="%Y%m%d %H:%M:%S")
+    formatter = logging.Formatter(loggerformat, datefmt="%Y%m%d %H:%M:%S")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
@@ -259,8 +259,10 @@ def main(argv=None) -> int:
     argv = argv or sys.argv
     args = process_argv(argv)
     setup_logger()
+    start = time.time()
     try:
         run(args)
+        logger.info("Finished, took %s seconds.", round(time.time() - start, 2))
     except Exception as e:
         logger.exception(e)
         exit_code = 1
