@@ -36,7 +36,7 @@ docker run -it {YOUR DOCKER} muse_tool multi
 ```
 or
 ```
-python3.7 multi_muse.py
+python3.9 multi_muse.py
 ```
 ```
 usage: Internal multithreading MuSE call. [-h] -f REFERENCE_PATH -r

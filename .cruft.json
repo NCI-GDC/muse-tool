@@ -1,0 +1,20 @@
+{
+    "template": "git@github.com:NCI-GDC/bio-python-template.git",
+    "commit": "baf2226bed9c364393971df5fb8ed3bdafa1c744",
+    "context": {
+      "cookiecutter": {
+        "full_name": "Linghao Song",
+        "email": "linghao@uchicago.edu",
+        "github_username": "sxwcasd",
+        "project_name": "muse-tool",
+        "package_name": "muse_tool",
+        "project_short_description": "MuSE is somatic point mutation caller developed by Dr. Wenyi Wang’s group in MD Anderson Cancer Center (MDACC), and used by the Human Genome Sequencing Center (HGSC) in the Baylor College of Medicine (BCM). Thus it is often referred to as the Baylor pipeline. This pipeline takes a pair of tumor and normal BAM files, and does two-step calling and summarization to generate somatic SNV and INDEL VCFs. The only auxiliary file requirement is a VCF file from Single Nucleotide Polymorphism Database (dbSNP) for annotation.",
+        "min_python_version": "3.9",
+        "github_repo": "https://github.com/NCI-GDC/muse-tool",
+        "commit": "baf2226bed9c364393971df5fb8ed3bdafa1c744",
+        "_template": "git@github.com:NCI-GDC/bio-python-template.git"
+      }
+    },
+    "directory": null,
+    "checkout": null
+  }

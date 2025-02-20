@@ -4,6 +4,7 @@ Multithreading MuSE call
 
 @author: Shenglai Li
 """
+
 import argparse
 import concurrent.futures
 import logging
@@ -68,7 +69,9 @@ def subprocess_commands_pipe(cmd, timeout: int, di=DI) -> PopenReturnNT:
     """run pool commands"""
 
     output = di.subprocess.Popen(
-        shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        shlex.split(cmd),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     try:
         output_stdout, output_stderr = output.communicate(timeout=timeout)
@@ -80,7 +83,10 @@ def subprocess_commands_pipe(cmd, timeout: int, di=DI) -> PopenReturnNT:
     if output.returncode != 0:
         raise ValueError(output_stderr.decode())
 
-    return PopenReturnNT(stdout=output_stdout.decode(), stderr=output_stderr.decode(),)
+    return PopenReturnNT(
+        stdout=output_stdout.decode(),
+        stderr=output_stderr.decode(),
+    )
 
 
 def tpe_submit_commands(
@@ -130,7 +136,7 @@ def yield_bed_regions(intervals_file: str) -> Generator[str, None, None]:
 
 
 def get_file_size(filename: pathlib.Path) -> int:
-    """ Gets file size """
+    """Gets file size"""
     return filename.stat().st_size
 
 
@@ -139,7 +145,7 @@ def format_command(
     reference_path: str,
     tumor_bam: str,
     normal_bam: str,
-    muse_binary: str = 'muse',
+    muse_binary: str = "muse",
 ) -> Generator[str, None, None]:
     """Yield commands for each BED interval."""
     for i, interval in enumerate(yield_bed_regions(interval_bed_path)):
@@ -172,7 +178,10 @@ def setup_parser() -> argparse.ArgumentParser:
         "-c", "--thread_count", type=int, required=True, help="Number of threads."
     )
     parser.add_argument(
-        "--muse-binary", required=False, default="muse", help="Path to MuSE binary",
+        "--muse-binary",
+        required=False,
+        default="muse",
+        help="Path to MuSE binary",
     )
     parser.add_argument(
         "--timeout",
@@ -210,8 +219,8 @@ def process_argv(argv: Optional[List] = None) -> namedtuple:
         args, unknown_args = parser.parse_known_args()
 
     args_dict = vars(args)
-    args_dict['extras'] = unknown_args
-    run_args = namedtuple('RunArgs', list(args_dict.keys()))
+    args_dict["extras"] = unknown_args
+    run_args = namedtuple("RunArgs", list(args_dict.keys()))
     return run_args(**args_dict)
 
 
@@ -239,7 +248,7 @@ def run(run_args):
         raise ValueError("Exceptions raised during processing.")
 
     # Check and merge outputs
-    p = pathlib.Path('.')
+    p = pathlib.Path(".")
     outputs = list(p.glob("*.MuSE.txt"))
 
     # Sanity check
@@ -247,7 +256,7 @@ def run(run_args):
         logger.error("Number of output files not expected")
 
     merged_output_path = "multi_muse_call_merged.MuSE.txt"
-    with open(merged_output_path, 'w') as fh:
+    with open(merged_output_path, "w") as fh:
         merge_files(outputs, fh)
 
     return

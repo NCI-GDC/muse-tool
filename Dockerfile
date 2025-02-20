@@ -1,7 +1,6 @@
 FROM quay.io/ncigdc/muse:1.0 AS musetool
-MAINTAINER Charles Czysz <czysz@uchicago.edu>
 
-FROM quay.io/ncigdc/python37
+FROM quay.io/ncigdc/python39
 
 COPY --from=musetool /usr/local/bin/muse /usr/local/bin/
 
