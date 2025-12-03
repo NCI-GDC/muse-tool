@@ -1,7 +1,6 @@
 FROM quay.io/ncigdc/muse:1.0 AS musetool
-MAINTAINER Charles Czysz <czysz@uchicago.edu>
 
-FROM quay.io/ncigdc/python37
+FROM quay.io/ncigdc/python39
 
 COPY --from=musetool /usr/local/bin/muse /usr/local/bin/
 
@@ -24,6 +23,5 @@ RUN make init-pip \
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
-ENTRYPOINT ["/tini", "--", "muse_tool"]
 
-CMD ["--help"]
+CMD ["/tini", "--", "muse_tool", "--help"]
