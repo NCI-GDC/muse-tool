@@ -5,11 +5,10 @@ from muse_tool import multi_muse
 
 if __name__ == "__main__":
     # CLI Entrypoint.
-    retcode = 0
-
+    # retcode = 0
     try:
         retcode = multi_muse.main()
-    except Exception as e:
+    except Exception:
         retcode = 1
 
     sys.exit(retcode)
