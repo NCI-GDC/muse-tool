@@ -16,7 +16,7 @@ import time
 from collections import namedtuple
 from textwrap import dedent
 from types import SimpleNamespace
-from typing import IO, Any, Callable, Generator, List, NamedTuple, Optional, Tuple
+from typing import IO, Any, Callable, Generator, List, NamedTuple, Optional
 
 from muse_tool import __version__
 
@@ -119,10 +119,11 @@ def tpe_submit_commands(
                 result = future.result()
                 logger.info(result.stdout)
                 logger.info(result.stderr)
-            except Exception as e:
+            except Exception:
                 exceptions.append(cmd)
-                logger.error(result.stdout)
-                logger.error(result.stderr)
+                # logger.error(result.stdout)
+                # logger.error(result.stderr)
+                logger.exception("Command failed: %s", cmd)
     return exceptions
 
 
@@ -208,19 +209,35 @@ def merge_files(muse_outputs: List[pathlib.Path], out_fh: IO):
         first = False
 
 
-def process_argv(argv: Optional[List] = None) -> namedtuple:
+# def process_argv(argv: Optional[List] = None) -> namedtuple:
+#     """Processes argv into namedtuple."""
+
+#     parser = setup_parser()
+
+#     if argv:
+#         args, unknown_args = parser.parse_known_args(argv)
+#     else:
+#         args, unknown_args = parser.parse_known_args()
+
+#     args_dict = vars(args)
+#     args_dict["extras"] = unknown_args
+#     run_args = namedtuple("RunArgs", list(args_dict.keys()))
+#     return run_args(**args_dict)
+
+
+def process_argv(argv: Optional[List[str]] = None):
     """Processes argv into namedtuple."""
 
     parser = setup_parser()
 
-    if argv:
+    if argv is not None:
         args, unknown_args = parser.parse_known_args(argv)
     else:
         args, unknown_args = parser.parse_known_args()
 
     args_dict = vars(args)
     args_dict["extras"] = unknown_args
-    run_args = namedtuple("RunArgs", list(args_dict.keys()))
+    run_args = namedtuple("RunArgs", args_dict.keys())
     return run_args(**args_dict)
 
 
@@ -265,8 +282,10 @@ def run(run_args):
 def main(argv=None) -> int:
     exit_code = 0
 
-    argv = argv or sys.argv
-    args = process_argv(argv)
+    # argv = argv or sys.argv
+    # args = process_argv(argv)
+    argv_list = sys.argv[1:] if argv is None else argv
+    args = process_argv(argv_list)
     setup_logger()
     start = time.time()
     try:

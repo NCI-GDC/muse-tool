@@ -1,6 +1,13 @@
-try:
-    from muse_tool._version import __long_version__
+# try:
+#     from muse_tool._version import __long_version__
 
-    __version__ = __long_version__
+#     __version__ = __long_version__
+# except ImportError:
+#     __version__ = "0.0.0"
+
+try:
+    from muse_tool._version import __version__ as _version
 except ImportError:
-    __version__ = "0.0.0"
+    _version = "0.0.0"
+
+__version__ = _version

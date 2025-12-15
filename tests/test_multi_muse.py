@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pathlib
+# import pathlib
 import subprocess
 import unittest
 from types import SimpleNamespace
