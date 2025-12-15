@@ -13,10 +13,11 @@ import shlex
 import subprocess
 import sys
 import time
-from collections import namedtuple
+
+# from collections import namedtuple
 from textwrap import dedent
 from types import SimpleNamespace
-from typing import IO, Any, Callable, Generator, List, NamedTuple, Optional
+from typing import IO, Any, Callable, Generator, List, NamedTuple, Optional, Tuple
 
 from muse_tool import __version__
 
@@ -225,20 +226,13 @@ def merge_files(muse_outputs: List[pathlib.Path], out_fh: IO):
 #     return run_args(**args_dict)
 
 
-def process_argv(argv: Optional[List[str]] = None):
-    """Processes argv into namedtuple."""
-
+def process_argv(
+    argv: Optional[List[str]] = None,
+) -> Tuple[argparse.Namespace, List[str]]:
+    """Parse argv into argparse Namespace + list of unknown args."""
     parser = setup_parser()
-
-    if argv is not None:
-        args, unknown_args = parser.parse_known_args(argv)
-    else:
-        args, unknown_args = parser.parse_known_args()
-
-    args_dict = vars(args)
-    args_dict["extras"] = unknown_args
-    run_args = namedtuple("RunArgs", args_dict.keys())
-    return run_args(**args_dict)
+    args, unknown_args = parser.parse_known_args(argv)
+    return args, unknown_args
 
 
 def run(run_args):
@@ -285,7 +279,8 @@ def main(argv=None) -> int:
     # argv = argv or sys.argv
     # args = process_argv(argv)
     argv_list = sys.argv[1:] if argv is None else argv
-    args = process_argv(argv_list)
+    args, extras = process_argv(argv_list)
+    args.extras = extras
     setup_logger()
     start = time.time()
     try:
